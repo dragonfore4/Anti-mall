@@ -1,0 +1,165 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* ===== ธีม "กระดาษสา" — นิตยสารมรดกรัตนโกสินทร์ (Tailwind v4 CSS-first) ===== */
+@theme {
+  /* พื้น/กระดาษ */
+  --color-bg: #f0e6d2; /* กระดาษสาครีม */
+  --color-card: #f8f1e1; /* การ์ด/แผ่นยกขึ้น (อ่อนกว่าพื้น) */
+  --color-card2: #e9dcc1; /* แผงเข้มขึ้น */
+  --color-line: #d6c4a0; /* เส้นไม้บรรทัดบนกระดาษ */
+
+  /* หมึก/ข้อความ */
+  --color-ink: #211a12; /* หมึกดำรัก */
+  --color-muted: #7a6a55; /* น้ำตาลมุทรอง */
+
+  /* สี accent มรดก */
+  --color-accent: #b23a2e; /* ชาดแดง (สีวัด) */
+  --color-accent2: #b58a2e; /* ทองอ่อน */
+  --color-good: #4f6b46; /* เขียวมอส (เช็คอินแล้ว) */
+
+  /* ฟอนต์ (ผูกกับ next/font ใน layout) */
+  --font-display: var(--font-chonburi), "Noto Serif Thai", serif;
+  --font-sans: var(--font-sarabun), -apple-system, "Noto Sans Thai", system-ui,
+    sans-serif;
+
+  --container-app: 480px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  /* พื้นกระดาษ + grain จาง ๆ + แสงนวลมุมบน */
+  background-color: #f0e6d2;
+  background-image:
+    radial-gradient(120% 80% at 50% -10%, rgba(255, 251, 240, 0.7), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  background-attachment: fixed, fixed;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #f8f1e1;
+}
+
+/* ===== ลูกเล่น/decorative ใช้ซ้ำได้ ===== */
+
+/* เลขมาตราแบบนิตยสาร (วงกลมชาดแดง) */
+.kicker {
+  font-family: var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* เส้นคู่ใต้หัวข้อ (ไม้บรรทัดนิตยสาร) */
+.rule-double {
+  border-top: 2px solid var(--color-ink);
+  box-shadow: 0 3px 0 -1px var(--color-line);
+}
+
+/* กรอบ/การ์ดกระดาษ มีเงานุ่ม + เส้นหมึก */
+.card-paper {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 10px 24px -16px rgba(33, 26, 18, 0.5);
+}
+
+/* ลายขีดเฉียง (decorative fill) */
+.hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-line) 0 1px,
+    transparent 1px 7px
+  );
+}
+
+/* จุด "สด" กระพริบ (live indicator) */
+.livedot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 0 rgba(178, 58, 46, 0.5);
+  animation: blip 1.6s infinite;
+}
+@keyframes blip {
+  0% {
+    box-shadow: 0 0 0 0 rgba(178, 58, 46, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(178, 58, 46, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(178, 58, 46, 0);
+  }
+}
+
+/* หมุดตำแหน่งปัจจุบัน (pulse) */
+.pulse {
+  width: 16px;
+  height: 16px;
+  background: #2563eb;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(37, 99, 235, 0.5);
+  animation: pulse 1.8s infinite;
+}
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+/* เข้าหน้าแบบ staggered (editorial reveal) */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* popup ของ Leaflet ให้เข้าธีมกระดาษ */
+.leaflet-popup-content-wrapper {
+  background: var(--color-card);
+  color: var(--color-ink);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+}
+.leaflet-popup-tip {
+  background: var(--color-card);
+}
+.leaflet-popup-content {
+  font-family: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.leaflet-container {
+  background: #e9dcc1;
+  font-family: inherit;
+}
