@@ -16,8 +16,9 @@ interface RunState {
   elapsedMs: number;
 
   points: number;
+  calories: number; // แคลอรี่สะสม (บวกตามจุดที่เช็คอิน)
   checkedIn: string[]; // id ของจุดที่เช็คอินแล้ว
-  lastCheckin: { name: string; fact: string; pts: number } | null;
+  lastCheckin: { name: string; fact: string; pts: number; cal: number } | null;
 
   // actions
   begin: (route: RouteDef, mode: RunMode) => void;
@@ -38,6 +39,7 @@ export const useRunStore = create<RunState>((set, get) => ({
   startTime: 0,
   elapsedMs: 0,
   points: 0,
+  calories: 0,
   checkedIn: [],
   lastCheckin: null,
 
@@ -52,6 +54,7 @@ export const useRunStore = create<RunState>((set, get) => ({
       startTime: Date.now(),
       elapsedMs: 0,
       points: 0,
+      calories: 0,
       checkedIn: [],
       lastCheckin: null,
     }),
@@ -68,18 +71,21 @@ export const useRunStore = create<RunState>((set, get) => ({
     }
 
     // ตรวจ check-in จุดที่ยังไม่เคยเช็คอิน
-    let { points, checkedIn, lastCheckin } = s;
+    let { points, calories, checkedIn, lastCheckin } = s;
     const route = s.route;
     if (route) {
-      for (const cpId of route.checkpointIds) {
-        if (checkedIn.includes(cpId)) continue;
+      route.checkpointIds.forEach((cpId, i) => {
+        if (checkedIn.includes(cpId)) return;
         const cp = checkpointById(cpId);
         if (cp && distanceM(ll, cp.ll) <= CHECKIN_RADIUS_M) {
+          // แคลของช่วงที่เพิ่งวิ่งมา (จุดก่อนหน้า -> จุดนี้) จุดเริ่มไม่มีช่วง = 0
+          const legCal = i === 0 ? 0 : (route.legCal[i - 1] ?? 0);
           checkedIn = [...checkedIn, cpId];
           points += cp.pts;
-          lastCheckin = { name: cp.name, fact: cp.fact, pts: cp.pts };
+          calories += legCal;
+          lastCheckin = { name: cp.name, fact: cp.fact, pts: cp.pts, cal: legCal };
         }
-      }
+      });
     }
 
     set({
@@ -87,6 +93,7 @@ export const useRunStore = create<RunState>((set, get) => ({
       trace: [...s.trace, ll],
       distanceM: dist,
       points,
+      calories,
       checkedIn,
       lastCheckin,
     });
@@ -110,6 +117,7 @@ export const useRunStore = create<RunState>((set, get) => ({
       startTime: 0,
       elapsedMs: 0,
       points: 0,
+      calories: 0,
       checkedIn: [],
       lastCheckin: null,
     }),

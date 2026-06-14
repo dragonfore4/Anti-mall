@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeroStats from "@/components/HeroStats";
+import AuthButton from "@/components/AuthButton";
 
 const MODES = [
   {
@@ -32,7 +33,7 @@ export default function HomePage() {
       {/* หัวกระดาษ (masthead) */}
       <div className="rise flex items-center justify-between text-[10.5px] uppercase tracking-[0.22em] text-muted">
         <span className="font-display normal-case tracking-normal text-accent">รัตนโกสินทร์</span>
-        <span>ฉบับเมืองเก่า · ๒๕๖๙</span>
+        <AuthButton />
       </div>
       <div className="rule-double rise mt-3" style={{ animationDelay: "60ms" }} />
 

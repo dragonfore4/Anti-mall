@@ -20,6 +20,9 @@ export interface RouteDef {
   distanceKm: number;
   path: LatLng[]; // เส้นที่ควรวิ่ง
   checkpointIds: string[];
+  // แคลอรี่ต่อช่วง (leg) — legCal[i] = แคลของช่วง checkpointIds[i] -> [i+1]
+  // ความยาว = checkpointIds.length - 1 (จุดเริ่มไม่มีช่วงก่อนหน้า)
+  legCal: number[];
   kind: "basic" | "advance";
 }
 

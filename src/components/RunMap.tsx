@@ -142,6 +142,9 @@ export default function RunMap({ route, trace, current, checkedIn }: Props) {
               {cp.fact}
               <br />
               <span style={{ color: "#16a34a" }}>+{cp.pts} แต้ม</span>
+              {idx > 0 && (
+                <span style={{ color: "#ff7a59" }}> · 🔥 {route.legCal[idx - 1] ?? 0} แคล (ช่วงก่อนถึงจุดนี้)</span>
+              )}
             </Popup>
           </Marker>
         );

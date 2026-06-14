@@ -7,9 +7,9 @@ import type { RouteDef, RunMode } from "@/types";
 import { basicRouteById } from "@/data/routes";
 import { repo } from "@/lib/storage";
 import { useRunStore } from "@/store/runStore";
-import { densify, pathLengthM } from "@/lib/geo";
+import { densify, metersToKm, pathLengthM } from "@/lib/geo";
 import { snapToRoads } from "@/lib/snapToRoads";
-import { calories, fmtTime, steps } from "@/lib/stats";
+import { fmtTime, steps } from "@/lib/stats";
 import { useWakeLock } from "@/lib/useWakeLock";
 import StatsBar from "@/components/StatsBar";
 import CheckinToast from "@/components/CheckinToast";
@@ -45,7 +45,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         setRoute({
           ...base,
           path: snapped,
-          distanceKm: +(pathLengthM(snapped) / 1000).toFixed(2),
+          distanceKm: metersToKm(pathLengthM(snapped)),
         });
       }
     });
@@ -109,12 +109,12 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
       dateISO: new Date().toISOString(),
       km: +(s.distanceM / 1000).toFixed(2),
       elapsedMs: s.elapsedMs,
-      calories: calories(s.elapsedMs),
+      calories: s.calories,
       steps: steps(s.distanceM),
       points: s.points,
       checkins: s.checkedIn.length,
     });
-  }, [s.status, route, s.distanceM, s.elapsedMs, s.points, s.checkedIn.length]);
+  }, [s.status, route, s.distanceM, s.elapsedMs, s.points, s.calories, s.checkedIn.length]);
 
   // รีเซ็ตเมื่อออกจากหน้า
   useEffect(() => () => useRunStore.getState().reset(), []);
@@ -124,10 +124,10 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
     () => [
       { value: km, label: "กิโลเมตร" },
       { value: fmtTime(s.elapsedMs), label: "เวลา" },
-      { value: String(calories(s.elapsedMs)), label: "แคลอรี่" },
+      { value: String(s.calories), label: "แคลอรี่" },
       { value: steps(s.distanceM).toLocaleString(), label: "ก้าว" },
     ],
-    [km, s.elapsedMs, s.distanceM],
+    [km, s.elapsedMs, s.distanceM, s.calories],
   );
 
   const onShare = async () => {
@@ -227,7 +227,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         <SummaryModal
           km={km}
           time={fmtTime(s.elapsedMs)}
-          cal={calories(s.elapsedMs)}
+          cal={s.calories}
           steps={steps(s.distanceM)}
           points={s.points}
           checkins={s.checkedIn.length}

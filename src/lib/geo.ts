@@ -19,6 +19,24 @@ export function pathLengthM(path: LatLng[]): number {
   return total;
 }
 
+/** แปลงเมตร -> กิโลเมตร ปัดทศนิยม 2 ตำแหน่ง (ใช้แสดง/เก็บระยะทาง) */
+export function metersToKm(meters: number): number {
+  return +(meters / 1000).toFixed(2);
+}
+
+/**
+ * แคลอรี่ต่อช่วง (leg) แบบ fallback: ระยะแต่ละช่วง(กม.) × อัตรา ปัดจำนวนเต็ม
+ * ใช้กับเส้นทางที่ไม่ได้กรอก legCal เอง (เช่น Advance ที่สร้างสด ๆ)
+ * คืน array ความยาว = path.length - 1
+ */
+export function legCaloriesFromPath(path: LatLng[], calPerKm = 65): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < path.length - 1; i++) {
+    out.push(Math.round((distanceM(path[i], path[i + 1]) / 1000) * calPerKm));
+  }
+  return out;
+}
+
 /**
  * แตกเส้นทางเป็นจุดย่อยถี่ ๆ (สำหรับโหมดจำลองวิ่งให้ลื่น)
  * stepM = ระยะห่างเป้าหมายระหว่างจุดย่อย (เมตร)

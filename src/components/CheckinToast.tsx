@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 interface Props {
-  data: { name: string; fact: string; pts: number } | null;
+  data: { name: string; fact: string; pts: number; cal: number } | null;
   onClose: () => void;
 }
 
@@ -39,7 +39,10 @@ export default function CheckinToast({ data, onClose }: Props) {
             📍 เช็คอิน: {data.name}
           </div>
           <div className="mt-1.5 text-[12.5px] leading-relaxed">{data.fact}</div>
-          <div className="mt-1.5 text-xs font-bold text-good">🏆 +{data.pts} แต้ม!</div>
+          <div className="mt-1.5 flex gap-3 text-xs font-bold">
+            <span className="text-good">🏆 +{data.pts} แต้ม</span>
+            {data.cal > 0 && <span className="text-accent2">🔥 +{data.cal} แคล (ช่วงนี้)</span>}
+          </div>
         </>
       )}
     </div>

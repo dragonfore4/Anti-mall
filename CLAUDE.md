@@ -26,7 +26,8 @@ Next.js 16 (App Router) · React 19 · TypeScript 6 · **Tailwind v4 (CSS-first)
 
 ### ชั้นข้อมูล: หมุดคือแหล่งความจริงเดียว
 - [data/checkpoints.ts](src/data/checkpoints.ts) เก็บพิกัด `ll: [lat,lng]` จริงของหมุดมรดกทั้ง ๙ จุด **ที่เดียว** + แต้ม/เกร็ดความรู้
-- [data/routes.ts](src/data/routes.ts) นิยามเส้นทาง Basic ด้วย factory `basic({...})` ที่รับแค่ `checkpointIds` แล้ว **derive `path` + `distanceKm` อัตโนมัติ** ผ่าน `checkpointPath()` — อย่าพิมพ์พิกัด `path` มือ (ใส่ override ได้ถ้าจำเป็น)
+- [data/routes.ts](src/data/routes.ts) นิยามเส้นทาง Basic ด้วย factory `basic({...})` ที่รับแค่ `checkpointIds` แล้ว **derive `path` + `distanceKm` + `legCal` อัตโนมัติ** ผ่าน `checkpointPath()` — อย่าพิมพ์พิกัด `path` มือ (ใส่ override ได้ถ้าจำเป็น)
+- **แคลอรี่เป็นค่าต่อช่วง (leg)** เก็บใน `legCal: number[]` ของแต่ละเส้นทาง (ยาว = จำนวนหมุด − 1) เช็คอินถึงหมุดที่ N → ได้แคลของช่วง N-1→N · ไม่ใส่ `legCal` = คิดจากระยะให้ (`legCaloriesFromPath` ใน geo.ts) · Advance ใช้ fallback นี้เสมอ
 - ผลลัพธ์: `route.path` = พิกัดหมุดเรียงตามลำดับเสมอ ทั้ง Basic และ Advance ([routeGen.ts](src/lib/routeGen.ts) ก็ map checkpoint → ll เหมือนกัน)
 
 ### เส้นทางเกาะถนนจริง (OpenRouteService)
@@ -37,9 +38,9 @@ Next.js 16 (App Router) · React 19 · TypeScript 6 · **Tailwind v4 (CSS-first)
 
 ### State การวิ่ง: zustand store
 - [store/runStore.ts](src/store/runStore.ts) เก็บ status/trace/distance/points/checkedIn ฯลฯ
-- **`pushPosition()` คือหัวใจ** — ทุกตำแหน่งใหม่ (จาก sim หรือ GPS) เข้าฟังก์ชันนี้: กรอง noise (ทิ้ง jump > `GPS_JUMP_MAX_M` 200ม.) → บวกระยะ (Haversine) → ต่อ trace → ตรวจ check-in (เข้าใกล้หมุด < `CHECKIN_RADIUS_M` 45ม. → +แต้ม + เด้ง toast)
+- **`pushPosition()` คือหัวใจ** — ทุกตำแหน่งใหม่ (จาก sim หรือ GPS) เข้าฟังก์ชันนี้: กรอง noise (ทิ้ง jump > `GPS_JUMP_MAX_M` 200ม.) → บวกระยะ (Haversine) → ต่อ trace → ตรวจ check-in (เข้าใกล้หมุดที่ index `i` < `CHECKIN_RADIUS_M` 45ม. → +แต้ม + แคลของช่วง `route.legCal[i-1]` + เด้ง toast)
 - 2 โหมดป้อนตำแหน่งเข้าฟังก์ชันเดียวกัน: **sim** = `densify(route.path)` แล้ว step ทุก 180ms / **gps** = `watchPosition`
-- ค่าคงที่/สูตร (น้ำหนัก, MET, ก้าว) อยู่ [lib/stats.ts](src/lib/stats.ts); geo math (Haversine/densify/centroid) อยู่ [lib/geo.ts](src/lib/geo.ts)
+- ค่าคงที่ (ความยาวก้าว, รัศมีเช็คอิน, เกณฑ์กรอง GPS) อยู่ [lib/stats.ts](src/lib/stats.ts); geo math (Haversine/densify/metersToKm/legCaloriesFromPath/centroid) อยู่ [lib/geo.ts](src/lib/geo.ts) — แคลอรี่ไม่ใช้สูตร MET แล้ว (ดูชั้นข้อมูลด้านบน)
 
 ### Persistence: สลับ backend ได้
 - [lib/storage.ts](src/lib/storage.ts) เป็น `RunRepository` interface ปัจจุบัน `LocalRepo` (localStorage) — **ออกแบบให้สลับเป็น Supabase ได้โดยไม่แตะหน้าเว็บ** (มีคอมเมนต์จุดเสียบ) ทุกการอ่าน/เขียน localStorage มี guard `typeof window` ให้ SSR ผ่าน
