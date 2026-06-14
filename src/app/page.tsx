@@ -200,6 +200,14 @@ export default function HomePage() {
             <div className="font-display text-sm text-accent">แต้ม &amp; รางวัล</div>
             <div className="text-[11.5px] leading-snug text-muted">สะสมแต้มแลกกราฟิกมรดก</div>
           </Link>
+          <Link href="/achievements" className="card-paper flex flex-col gap-2 rounded-xl p-4 active:scale-[0.98]">
+            <div className="font-display text-sm text-accent">เหรียญสถานที่</div>
+            <div className="text-[11.5px] leading-snug text-muted">สแกน QR ตามจุดเพื่อสะสมเหรียญ</div>
+          </Link>
+          <Link href="/scan" className="card-paper flex flex-col gap-2 rounded-xl p-4 active:scale-[0.98]">
+            <div className="font-display text-sm text-accent">📷 สแกน QR</div>
+            <div className="text-[11.5px] leading-snug text-muted">ปลดล็อกเหรียญจุดมรดก</div>
+          </Link>
           <Link href="/history" className="card-paper flex flex-col gap-2 rounded-xl p-4 active:scale-[0.98]">
             <div className="font-display text-sm text-accent">ประวัติการวิ่ง</div>
             <div className="text-[11.5px] leading-snug text-muted">สถิติย้อนหลังทุกครั้งที่วิ่ง</div>

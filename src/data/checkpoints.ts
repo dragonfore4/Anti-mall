@@ -12,6 +12,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "พระบรมมหาราชวัง",
     heritage: "วัง/วัดหลวง",
     pts: 50,
+    emoji: "👑",
     fact: "ที่ประดิษฐานพระแก้วมรกต พระพุทธรูปคู่บ้านคู่เมือง สร้างปี พ.ศ. 2325 พร้อมการสถาปนากรุงเทพฯ",
   },
   {
@@ -21,6 +22,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "ท่าเตียน",
     heritage: "วัด",
     pts: 40,
+    emoji: "🛕",
     fact: "แหล่งกำเนิดการนวดแผนไทย และมีพระพุทธไสยาสน์ (พระนอน) ยาว 46 เมตร",
   },
   {
@@ -30,6 +32,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "ท่าเตียน",
     heritage: "ย่านการค้า/ตลาด",
     pts: 25,
+    emoji: "⚓",
     fact: "ตลาดเก่าริมแม่น้ำเจ้าพระยา ตึกแถวสไตล์ชิโน-โปรตุกีส มีตำนานยักษ์วัดโพธิ์–วัดแจ้ง",
   },
   {
@@ -39,6 +42,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "สนามหลวง",
     heritage: "ลานพระราชพิธี",
     pts: 30,
+    emoji: "🪁",
     fact: "ลานกว้างกลางพระนคร ใช้ในพระราชพิธีสำคัญ และเคยเป็นที่จัดงานว่าวประจำปี",
   },
   {
@@ -48,6 +52,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "สนามหลวง",
     heritage: "ศาล/สิ่งศักดิ์สิทธิ์",
     pts: 30,
+    emoji: "🙏",
     fact: "สร้างคู่กับการสถาปนากรุงเทพฯ พ.ศ. 2325 เป็นที่ประดิษฐานเสาหลักเมือง",
   },
   {
@@ -57,6 +62,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "เสาชิงช้า",
     heritage: "สถาปัตยกรรม/พราหมณ์",
     pts: 40,
+    emoji: "🎏",
     fact: "เสาแดงสูง 21 เมตร เคยใช้ในพิธีโล้ชิงช้าของศาสนาพราหมณ์ ใกล้วัดสุทัศน์",
   },
   {
@@ -66,6 +72,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "ราชดำเนิน",
     heritage: "อนุสาวรีย์",
     pts: 30,
+    emoji: "🏛️",
     fact: "สร้างปี พ.ศ. 2482 รำลึกการเปลี่ยนแปลงการปกครอง 2475 ตั้งกลางถนนราชดำเนินกลาง",
   },
   {
@@ -75,6 +82,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "ราชดำเนิน",
     heritage: "ถนนประวัติศาสตร์",
     pts: 20,
+    emoji: "🛣️",
     fact: "ถนนพระราชดำริในรัชกาลที่ 5 ออกแบบตามถนนในยุโรป สองข้างเป็นอาคารสไตล์โมเดิร์น",
   },
   {
@@ -84,6 +92,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "บางลำพู",
     heritage: "ย่านชุมชนเก่า",
     pts: 25,
+    emoji: "🏮",
     fact: "ย่านการค้าเก่าแก่ ใกล้ถนนข้าวสาร มีชุมชนช่างฝีมือและร้านขนมไทยดั้งเดิม",
   },
   {
@@ -93,6 +102,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     district: "บางลำพู",
     heritage: "ป้อมปราการ",
     pts: 40,
+    emoji: "🏰",
     fact: "ป้อมปราการเก่าริมแม่น้ำเจ้าพระยา 1 ใน 2 ป้อมที่เหลืออยู่จากเดิม 14 ป้อม",
   },
 ];

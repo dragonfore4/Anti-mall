@@ -9,6 +9,7 @@ export interface Checkpoint {
   heritage: string; // ประเภทมรดก (วัด/อนุสรณ์สถาน/ป้อม ฯลฯ)
   fact: string; // เกร็ดความรู้
   pts: number; // แต้มที่ได้เมื่อเช็คอิน
+  emoji: string; // หน้าเหรียญสถานที่ (achievement) เมื่อสแกน QR ปลดล็อก
 }
 
 /** เส้นทางวิ่ง (ทั้ง Basic สำเร็จรูป และ Advance ที่สร้างเอง) */
