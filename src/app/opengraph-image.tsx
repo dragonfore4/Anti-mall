@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { NOTO_FONT_URLS } from "@/lib/notoSansThai";
+import { NOTO_FONT_URLS, NOTO_FAMILY } from "@/lib/notoSansThai";
 
 // OG card 1200×630 (โผล่ตอนแชร์ลิงก์ใน LINE/FB/X) — ธีมกระดาษสา
 export const alt = "วิ่งรอบเกาะรัตนโกสินทร์";
@@ -25,7 +25,7 @@ export default async function OpengraphImage() {
           justifyContent: "space-between",
           background: "#f4ecdd",
           color: "#2a2118",
-          fontFamily: "Noto Sans Thai",
+          fontFamily: NOTO_FAMILY,
           padding: "70px 80px",
           border: "16px solid #b23a2e",
         }}
@@ -71,10 +71,10 @@ export default async function OpengraphImage() {
     {
       ...size,
       fonts: [
-        { name: "Noto Sans Thai", data: thai400, style: "normal", weight: 400 },
-        { name: "Noto Sans Thai", data: thai700, style: "normal", weight: 700 },
-        { name: "Noto Sans Thai", data: latin400, style: "normal", weight: 400 },
-        { name: "Noto Sans Thai", data: latin700, style: "normal", weight: 700 },
+        { name: NOTO_FAMILY, data: thai400, style: "normal", weight: 400 },
+        { name: NOTO_FAMILY, data: thai700, style: "normal", weight: 700 },
+        { name: NOTO_FAMILY, data: latin400, style: "normal", weight: 400 },
+        { name: NOTO_FAMILY, data: latin700, style: "normal", weight: 700 },
       ],
     },
   );
