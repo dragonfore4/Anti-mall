@@ -18,6 +18,8 @@ import StatsBar from "@/components/StatsBar";
 import CheckinToast from "@/components/CheckinToast";
 import SummaryModal from "@/components/SummaryModal";
 import ScanOverlay from "@/components/ScanOverlay";
+import RecapShareModal from "@/components/RecapShareModal";
+import type { RecapData } from "@/lib/recapCard";
 
 // แผนที่ต้องโหลดฝั่ง client เท่านั้น (Leaflet อ้าง window)
 const RunMap = dynamic(() => import("@/components/RunMap"), {
@@ -60,6 +62,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
 
   const [mode, setMode] = useState<RunMode>("sim");
   const [scanning, setScanning] = useState(false);
+  const [showRecap, setShowRecap] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const s = useRunStore();
   const savedRef = useRef(false);
@@ -162,20 +165,25 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
     [km, s.elapsedMs, s.distanceM, s.calories],
   );
 
-  const onShare = async () => {
-    const text = `🏃 ฉันวิ่ง "${route?.name}" ${km} กม. ใน ${formatTime(
-      s.elapsedMs,
-    )} น. ได้ ${s.points} แต้ม! #วิ่งรอบเกาะรัตนโกสินทร์`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "ผลการวิ่ง", text });
-      } catch {
-        /* ผู้ใช้ยกเลิก */
-      }
-    } else {
-      alert("ข้อความแชร์ (เดโม):\n\n" + text);
-    }
-  };
+  const onShare = () => setShowRecap(true);
+
+  // ข้อมูลการ์ดสรุปผล — memoize เพื่อไม่ให้ canvas วาดใหม่ทุก render
+  const recapData: RecapData | null = useMemo(
+    () =>
+      showRecap && route
+        ? {
+            routeName: route.name,
+            km,
+            time: formatTime(s.elapsedMs),
+            calories: s.calories,
+            steps: steps(s.distanceM),
+            points: s.points,
+            medals: s.checkedIn.length,
+            trace: s.trace,
+          }
+        : null,
+    [showRecap, route, km, s.elapsedMs, s.calories, s.distanceM, s.points, s.checkedIn.length, s.trace],
+  );
 
   if (route === undefined)
     return <main className="flex min-h-[100dvh] items-center justify-center text-muted">กำลังโหลด…</main>;
@@ -285,6 +293,8 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         </div>
       )}
 
+      {/* การ์ดสรุปผล (modal) */}
+      {showRecap && recapData && <RecapShareModal data={recapData} onClose={() => setShowRecap(false)} />}
       {/* สแกน QR ระหว่างวิ่ง (modal) */}
       {scanning && <ScanOverlay modal onClose={() => setScanning(false)} />}
     </main>

@@ -1,18 +1,17 @@
 import { ImageResponse } from "next/og";
+import { NOTO_FONT_URLS, NOTO_FAMILY } from "@/lib/notoSansThai";
 
 // OG card 1200×630 (โผล่ตอนแชร์ลิงก์ใน LINE/FB/X) — ธีมกระดาษสา
 export const alt = "วิ่งรอบเกาะรัตนโกสินทร์";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// ใช้ IBM Plex Sans Thai (static) — Satori เรนเดอร์สระ/วรรณยุกต์ไทยได้ถูกตำแหน่ง
-// (Chonburi/Sarabun ทำ mark-positioning ใน Satori เพี้ยน)
-const FONT_BASE = "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsansthai";
-
 export default async function OpengraphImage() {
-  const [regular, bold] = await Promise.all([
-    fetch(`${FONT_BASE}/IBMPlexSansThai-Regular.ttf`).then((r) => r.arrayBuffer()),
-    fetch(`${FONT_BASE}/IBMPlexSansThai-Bold.ttf`).then((r) => r.arrayBuffer()),
+  const [thai400, thai700, latin400, latin700] = await Promise.all([
+    fetch(NOTO_FONT_URLS.thai400).then((r) => r.arrayBuffer()),
+    fetch(NOTO_FONT_URLS.thai700).then((r) => r.arrayBuffer()),
+    fetch(NOTO_FONT_URLS.latin400).then((r) => r.arrayBuffer()),
+    fetch(NOTO_FONT_URLS.latin700).then((r) => r.arrayBuffer()),
   ]);
 
   return new ImageResponse(
@@ -26,7 +25,7 @@ export default async function OpengraphImage() {
           justifyContent: "space-between",
           background: "#f4ecdd",
           color: "#2a2118",
-          fontFamily: "IBM Plex Sans Thai",
+          fontFamily: NOTO_FAMILY,
           padding: "70px 80px",
           border: "16px solid #b23a2e",
         }}
@@ -36,7 +35,6 @@ export default async function OpengraphImage() {
             style={{
               fontSize: 26,
               fontWeight: 700,
-              letterSpacing: 8,
               color: "#b23a2e",
               textTransform: "uppercase",
             }}
@@ -73,8 +71,10 @@ export default async function OpengraphImage() {
     {
       ...size,
       fonts: [
-        { name: "IBM Plex Sans Thai", data: regular, style: "normal", weight: 400 },
-        { name: "IBM Plex Sans Thai", data: bold, style: "normal", weight: 700 },
+        { name: NOTO_FAMILY, data: thai400, style: "normal", weight: 400 },
+        { name: NOTO_FAMILY, data: thai700, style: "normal", weight: 700 },
+        { name: NOTO_FAMILY, data: latin400, style: "normal", weight: 400 },
+        { name: NOTO_FAMILY, data: latin700, style: "normal", weight: 700 },
       ],
     },
   );
