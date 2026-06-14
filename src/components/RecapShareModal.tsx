@@ -89,7 +89,7 @@ export default function RecapShareModal({ data, onClose }: Props) {
       return;
     }
     const file = new File([blob], fileName, { type: "image/png" });
-    const text = `🏃 ฉันวิ่ง "${data.routeName}" ${data.km} กม. ได้ ${data.points} แต้ม! #วิ่งรอบเกาะรัตนโกสินทร์`;
+    const text = `🏃 ฉันวิ่ง "${data.routeName}" ${data.km} กม. ใน ${data.time} น. ได้ ${data.points} แต้ม! #วิ่งรอบเกาะรัตนโกสินทร์`;
     try {
       await navigator.share({ files: [file], text });
     } catch {

@@ -170,7 +170,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
   // ข้อมูลการ์ดสรุปผล — memoize เพื่อไม่ให้ canvas วาดใหม่ทุก render
   const recapData: RecapData | null = useMemo(
     () =>
-      route
+      showRecap && route
         ? {
             routeName: route.name,
             km,
@@ -182,7 +182,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
             trace: s.trace,
           }
         : null,
-    [route, km, s.elapsedMs, s.calories, s.distanceM, s.points, s.checkedIn.length, s.trace],
+    [showRecap, route, km, s.elapsedMs, s.calories, s.distanceM, s.points, s.checkedIn.length, s.trace],
   );
 
   if (route === undefined)
