@@ -26,7 +26,7 @@ export function metersToKm(meters: number): number {
 
 /**
  * แคลอรี่ต่อช่วง (leg) แบบ fallback: ระยะแต่ละช่วง(กม.) × อัตรา ปัดจำนวนเต็ม
- * ใช้กับเส้นทางที่ไม่ได้กรอก legCal เอง (เช่น Advance ที่สร้างสด ๆ)
+ * ใช้กับเส้นทางที่ไม่ได้กรอก legCalories เอง (เช่น Advance ที่สร้างสด ๆ)
  * คืน array ความยาว = path.length - 1
  */
 export function legCaloriesFromPath(path: LatLng[], calPerKm = 65): number[] {

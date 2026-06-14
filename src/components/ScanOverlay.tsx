@@ -12,78 +12,88 @@ type Result =
   | { kind: "error"; msg: string };
 
 /**
- * สแกน QR แบบ fullscreen overlay (ใช้ทั้งหน้า /scan และปุ่มในหน้าวิ่ง)
- * payload ที่รับ: rk:cp:<checkpointId> -> ปลดล็อกเหรียญสถานที่
+ * สแกน QR (payload: rk:cp:<checkpointId> -> ปลดล็อกเหรียญสถานที่)
+ * - modal=false (ดีฟอลต์): เต็มจอ ใช้กับหน้า /scan
+ * - modal=true: การ์ดกลางจอ + พื้นหลังมืด ใช้กับปุ่มสแกนในหน้าวิ่ง (กดนอกการ์ดปิด)
  */
-export default function ScanOverlay({ onClose }: { onClose: () => void }) {
+export default function ScanOverlay({
+  onClose,
+  modal = false,
+}: {
+  onClose: () => void;
+  modal?: boolean;
+}) {
   const [result, setResult] = useState<Result | null>(null);
   const [camError, setCamError] = useState<string | null>(null);
-  const [nonce, setNonce] = useState(0);
+  const [facing, setFacing] = useState<"environment" | "user">("environment");
   const handledRef = useRef(false);
+  // คิวให้ teardown ของกล้องรอบก่อนเสร็จก่อนเริ่มรอบใหม่ (กัน 2 instance ชน #qr-reader)
+  const teardownRef = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     if (result) return;
     handledRef.current = false;
+    let cancelled = false;
     let scanner: Html5Qrcode | null = null;
-    let started = false;
-    let stopRequested = false;
 
-    // หยุดกล้องอย่างปลอดภัย — stop() จะ throw ถ้าไม่ได้กำลังสแกนอยู่ จึงต้องเช็ค state ก่อน
-    const safeStop = () => {
+    const safeStop = async () => {
       if (!scanner) return;
       try {
         const st = scanner.getState();
         if (st === Html5QrcodeScannerState.SCANNING || st === Html5QrcodeScannerState.PAUSED) {
-          scanner.stop().then(() => scanner?.clear()).catch(() => {});
+          await scanner.stop();
         }
+        scanner.clear();
       } catch {
         /* ยังไม่เริ่ม / หยุดไปแล้ว */
       }
     };
 
     const handle = async (text: string) => {
-      if (handledRef.current) return;
+      if (handledRef.current || cancelled) return;
+      handledRef.current = true; // กันยิงซ้ำทุกเฟรม (รวม QR ที่ไม่ใช่ของเรา)
       const m = text.match(/^rk:cp:(.+)$/);
-      const cp = m ? checkpointById(m[1]) : undefined;
-      if (!m || !cp) {
-        setResult({ kind: "invalid" });
-      } else {
-        handledRef.current = true;
-        const status = await repo.unlockAchievement(cp.id);
-        if (status === "error") setResult({ kind: "error", msg: "บันทึกไม่สำเร็จ — เข้าสู่ระบบหรือยัง?" });
-        else setResult({ kind: status, emoji: cp.emoji, name: cp.name });
+      const checkpoint = m ? checkpointById(m[1]) : undefined;
+      if (!m || !checkpoint) {
+        if (!cancelled) setResult({ kind: "invalid" });
+        return;
       }
-      safeStop();
+      const status = await repo.unlockAchievement(checkpoint.id);
+      if (cancelled) return; // ปิด overlay ระหว่างรอ network -> ไม่ setState
+      if (status === "error") setResult({ kind: "error", msg: "บันทึกไม่สำเร็จ — เข้าสู่ระบบหรือยัง?" });
+      else setResult({ kind: status, emoji: checkpoint.emoji, name: checkpoint.name });
     };
 
-    // หน่วงเล็กน้อยกัน StrictMode mount/unmount เร็ว ๆ -> ถ้าถูกทิ้งก่อน timer ทำงาน กล้องจะไม่เริ่มเลย
-    // (กัน AbortError จาก video.play() ที่ element ถูกถอดกลางคัน)
-    const timer = setTimeout(() => {
+    // serialize: รอกล้องรอบก่อนปิดสนิทก่อน แล้วค่อยเปิดใหม่ (กันสลับกล้อง/StrictMode ชนกัน)
+    const prevTeardown = teardownRef.current;
+    let resolveTeardown!: () => void;
+    teardownRef.current = new Promise<void>((r) => (resolveTeardown = r));
+
+    (async () => {
+      await prevTeardown;
+      if (cancelled) return;
       scanner = new Html5Qrcode("qr-reader");
-      scanner
-        .start({ facingMode: "environment" }, { fps: 10, qrbox: 240 }, handle, () => {})
-        .then(() => {
-          started = true;
-          if (stopRequested) safeStop();
-        })
-        .catch((e) => setCamError(String(e?.message ?? e)));
-    }, 120);
+      try {
+        await scanner.start({ facingMode: facing }, { fps: 10, qrbox: 240 }, handle, () => {});
+        if (cancelled) await safeStop(); // ถูกปิดระหว่างเริ่มกล้อง
+      } catch (e) {
+        if (!cancelled) setCamError(String((e as Error)?.message ?? e));
+      }
+    })();
 
     return () => {
-      stopRequested = true;
-      clearTimeout(timer);
-      if (started) safeStop();
+      cancelled = true;
+      safeStop().finally(() => resolveTeardown());
     };
-  }, [result, nonce]);
+  }, [result, facing]);
 
   const scanAgain = () => {
     setResult(null);
     setCamError(null);
-    setNonce((n) => n + 1);
   };
 
-  return (
-    <div className="fixed inset-0 z-[1000] flex flex-col bg-bg">
+  const inner = (
+    <>
       <header className="flex items-center justify-between border-b border-line px-5 py-3">
         <h2 className="font-display text-lg">สแกน QR รับเหรียญ</h2>
         <button onClick={onClose} aria-label="ปิด" className="text-2xl text-muted active:scale-90">
@@ -91,11 +101,24 @@ export default function ScanOverlay({ onClose }: { onClose: () => void }) {
         </button>
       </header>
 
-      <div className="flex flex-1 flex-col justify-center px-6 pb-8">
+      <div
+        className={
+          modal ? "flex flex-col px-6 py-6" : "flex flex-1 flex-col justify-center px-6 pb-8"
+        }
+      >
         {!result ? (
           <>
-            <div className="overflow-hidden rounded-2xl border border-line bg-black">
+            <div className="relative overflow-hidden rounded-2xl border border-line bg-black">
               <div id="qr-reader" className="w-full" />
+              {!camError && (
+                <button
+                  onClick={() => setFacing((f) => (f === "environment" ? "user" : "environment"))}
+                  aria-label="สลับกล้อง"
+                  className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-full bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur active:scale-95"
+                >
+                  🔄 {facing === "environment" ? "กล้องหลัง" : "กล้องหน้า"}
+                </button>
+              )}
             </div>
             {camError ? (
               <p className="mt-4 rounded-xl border border-line bg-card2 p-4 text-xs leading-relaxed text-muted">
@@ -159,6 +182,24 @@ export default function ScanOverlay({ onClose }: { onClose: () => void }) {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
+
+  if (modal) {
+    return (
+      <div
+        className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-app overflow-hidden rounded-2xl border border-line bg-bg"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {inner}
+        </div>
+      </div>
+    );
+  }
+
+  return <div className="fixed inset-0 z-[1000] flex flex-col bg-bg">{inner}</div>;
 }

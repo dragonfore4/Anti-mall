@@ -25,15 +25,15 @@ function pickCheckpoints(sel: AdvanceSelection): Checkpoint[] {
  * เริ่มจากจุดเหนือสุด แล้วไล่หยิบจุดที่ใกล้จุดล่าสุดที่สุดไปเรื่อย ๆ
  */
 function orderByNearestNeighbour(checkpoints: Checkpoint[]): Checkpoint[] {
-  const remaining = [...checkpoints].sort((a, b) => b.ll[0] - a.ll[0]); // เหนือสุดก่อน
+  const remaining = [...checkpoints].sort((a, b) => b.coord[0] - a.coord[0]); // เหนือสุดก่อน
   const ordered: Checkpoint[] = [remaining.shift()!];
 
   while (remaining.length) {
-    const from = ordered[ordered.length - 1].ll;
+    const from = ordered[ordered.length - 1].coord;
     let nearest = 0;
     let nearestD = Infinity;
     remaining.forEach((c, i) => {
-      const d = distanceM(from, c.ll);
+      const d = distanceM(from, c.coord);
       if (d < nearestD) {
         nearestD = d;
         nearest = i;
@@ -53,7 +53,7 @@ export function generateAdvanceRoute(sel: AdvanceSelection): RouteDef | null {
   if (picked.length < 2) return null;
 
   const ordered = orderByNearestNeighbour(picked);
-  const path = ordered.map((c) => c.ll);
+  const path = ordered.map((c) => c.coord);
 
   return {
     id: `advance-${Date.now()}`,
@@ -62,7 +62,7 @@ export function generateAdvanceRoute(sel: AdvanceSelection): RouteDef | null {
     atmosphere: sel.atmosphere,
     distanceKm: metersToKm(pathLengthM(path)),
     // Advance สร้างสด ๆ กรอกเองไม่ได้ -> คิดแคลต่อช่วงจากระยะให้
-    legCal: legCaloriesFromPath(path),
+    legCalories: legCaloriesFromPath(path),
     kind: "advance",
     checkpointIds: ordered.map((c) => c.id),
     path,

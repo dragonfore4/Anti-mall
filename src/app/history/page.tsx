@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { RunRecord } from "@/types";
 import { repo } from "@/lib/storage";
-import { fmtTime } from "@/lib/stats";
+import { formatTime } from "@/lib/stats";
 
 export default function HistoryPage() {
   const [runs, setRuns] = useState<RunRecord[]>([]);
@@ -57,7 +57,7 @@ export default function HistoryPage() {
                   <b className="font-display text-ink">{r.km}</b> กม.
                 </span>
                 <span>
-                  <b className="font-display text-ink">{fmtTime(r.elapsedMs)}</b>
+                  <b className="font-display text-ink">{formatTime(r.elapsedMs)}</b>
                 </span>
                 <span>
                   <b className="font-display text-ink">{r.calories}</b> แคล

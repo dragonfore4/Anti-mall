@@ -16,11 +16,34 @@ const sans = Sarabun({
   display: "swap",
 });
 
+const SITE_URL = "https://anti-mall.vercel.app";
+const SITE_NAME = "วิ่งรอบเกาะรัตนโกสินทร์";
+const SITE_DESC =
+  "เว็บแอพวิ่งเชิงท่องเที่ยววัฒนธรรม รอบเกาะรัตนโกสินทร์ — GPS tracking + สะสมแต้ม + เกร็ดความรู้ + สแกน QR สะสมเหรียญสถานที่";
+
 export const metadata: Metadata = {
-  title: "วิ่งรอบเกาะรัตนโกสินทร์",
-  description:
-    "เว็บแอพวิ่งเชิงท่องเที่ยววัฒนธรรม รอบเกาะรัตนโกสินทร์ — GPS tracking + สะสมแต้ม + เกร็ดความรู้",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESC,
+  applicationName: SITE_NAME,
   manifest: "/manifest.webmanifest",
+  keywords: ["วิ่ง", "รัตนโกสินทร์", "เมืองเก่า", "กรุงเทพ", "GPS", "มรดกวัฒนธรรม", "anti-mall"],
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESC,
+    locale: "th_TH",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESC,
+  },
 };
 
 export const viewport: Viewport = {

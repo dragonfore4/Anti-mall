@@ -12,7 +12,7 @@ import { useUser } from "@/lib/useUser";
 import { useRunStore } from "@/store/runStore";
 import { densify, metersToKm, pathLengthM } from "@/lib/geo";
 import { snapToRoads } from "@/lib/snapToRoads";
-import { fmtTime, steps } from "@/lib/stats";
+import { formatTime, steps } from "@/lib/stats";
 import { useWakeLock } from "@/lib/useWakeLock";
 import StatsBar from "@/components/StatsBar";
 import CheckinToast from "@/components/CheckinToast";
@@ -60,6 +60,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
 
   const [mode, setMode] = useState<RunMode>("sim");
   const [scanning, setScanning] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const s = useRunStore();
   const savedRef = useRef(false);
   const router = useRouter();
@@ -116,10 +117,10 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
     return cleanup;
   }, [s.status, mode, route]);
 
-  // บันทึกผลเมื่อจบ (ครั้งเดียว)
-  useEffect(() => {
-    if (s.status !== "finished" || !route || savedRef.current) return;
-    savedRef.current = true;
+  // บันทึกผลการวิ่ง (เรียกตอนจบ + ปุ่มลองใหม่ถ้าพลาด)
+  const persistRun = () => {
+    if (!route) return;
+    setSaveError(false);
     repo
       .addRun({
         id: `run-${Date.now()}`,
@@ -132,7 +133,19 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         points: s.points,
         checkins: s.checkedIn.length,
       })
-      .catch((e) => console.error("บันทึกการวิ่งไม่สำเร็จ:", e));
+      .catch((e) => {
+        console.error("บันทึกการวิ่งไม่สำเร็จ:", e);
+        savedRef.current = false; // ปลดล็อกให้ effect/ปุ่มลองใหม่ได้
+        setSaveError(true);
+      });
+  };
+
+  // บันทึกผลเมื่อจบ (ครั้งเดียว)
+  useEffect(() => {
+    if (s.status !== "finished" || !route || savedRef.current) return;
+    savedRef.current = true;
+    persistRun();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.status, route, s.distanceM, s.elapsedMs, s.points, s.calories, s.checkedIn.length]);
 
   // รีเซ็ตเมื่อออกจากหน้า
@@ -142,7 +155,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
   const statList = useMemo(
     () => [
       { value: km, label: "กิโลเมตร" },
-      { value: fmtTime(s.elapsedMs), label: "เวลา" },
+      { value: formatTime(s.elapsedMs), label: "เวลา" },
       { value: String(s.calories), label: "แคลอรี่" },
       { value: steps(s.distanceM).toLocaleString(), label: "ก้าว" },
     ],
@@ -150,7 +163,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
   );
 
   const onShare = async () => {
-    const text = `🏃 ฉันวิ่ง "${route?.name}" ${km} กม. ใน ${fmtTime(
+    const text = `🏃 ฉันวิ่ง "${route?.name}" ${km} กม. ใน ${formatTime(
       s.elapsedMs,
     )} น. ได้ ${s.points} แต้ม! #วิ่งรอบเกาะรัตนโกสินทร์`;
     if (navigator.share) {
@@ -253,7 +266,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
       {s.status === "finished" && (
         <SummaryModal
           km={km}
-          time={fmtTime(s.elapsedMs)}
+          time={formatTime(s.elapsedMs)}
           cal={s.calories}
           steps={steps(s.distanceM)}
           points={s.points}
@@ -262,8 +275,18 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         />
       )}
 
-      {/* สแกน QR ระหว่างวิ่ง */}
-      {scanning && <ScanOverlay onClose={() => setScanning(false)} />}
+      {/* แจ้งเตือนเซฟไม่สำเร็จ + ปุ่มลองใหม่ */}
+      {s.status === "finished" && saveError && (
+        <div className="fixed inset-x-4 top-4 z-[1100] flex items-center justify-center gap-3 rounded-xl border border-accent bg-card p-3 text-sm shadow-2xl">
+          <span className="text-accent">⚠️ บันทึกการวิ่งไม่สำเร็จ</span>
+          <button onClick={persistRun} className="font-bold text-accent underline underline-offset-2">
+            ลองอีกครั้ง
+          </button>
+        </div>
+      )}
+
+      {/* สแกน QR ระหว่างวิ่ง (modal) */}
+      {scanning && <ScanOverlay modal onClose={() => setScanning(false)} />}
     </main>
   );
 }
