@@ -39,7 +39,8 @@ export function loadNotoSansThai(): Promise<void> {
       );
       await document.fonts.ready;
     } catch {
-      /* fall back to system sans */
+      loadPromise = null; // allow retry on the next call
+      /* fall back to system sans for this draw */
     }
   })();
   return loadPromise;
