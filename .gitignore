@@ -6,3 +6,4 @@
 *.pem
 .env*.local
 next-env.d.ts
+.superpowers/
