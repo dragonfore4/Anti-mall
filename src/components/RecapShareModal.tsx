@@ -8,25 +8,35 @@ interface Props {
   onClose: () => void;
 }
 
+// drawing -> ready (preview shown) | drawError (draw failed, offer redraw)
+// actionError = a save/share attempt failed; preview is still valid so buttons stay usable
+type Status = "drawing" | "ready" | "drawError" | "actionError";
+
 export default function RecapShareModal({ data, onClose }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState(false);
+  const mountedRef = useRef(true);
+  const [status, setStatus] = useState<Status>("drawing");
   const [canShareFiles, setCanShareFiles] = useState(false);
 
-  // draw once on mount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  // draw the card on mount (and if data changes)
   useEffect(() => {
     let cancelled = false;
-    setReady(false);
-    setError(false);
     const canvas = canvasRef.current;
     if (!canvas) return;
+    setStatus("drawing");
     drawRecapCard(canvas, data)
       .then(() => {
-        if (!cancelled) setReady(true);
+        if (!cancelled) setStatus("ready");
       })
       .catch(() => {
-        if (!cancelled) setError(true);
+        if (!cancelled) setStatus("drawError");
       });
     return () => {
       cancelled = true;
@@ -43,6 +53,8 @@ export default function RecapShareModal({ data, onClose }: Props) {
     }
   }, []);
 
+  const ready = status === "ready" || status === "actionError";
+
   const toBlob = () =>
     new Promise<Blob | null>((resolve) => {
       const canvas = canvasRef.current;
@@ -53,26 +65,49 @@ export default function RecapShareModal({ data, onClose }: Props) {
   const fileName = `recap-${data.routeName}-${data.km}km.png`.replace(/\s+/g, "-");
 
   const onSave = async () => {
+    setStatus("ready"); // clear any prior action error
     const blob = await toBlob();
-    if (!blob) return setError(true);
+    if (!blob) {
+      if (mountedRef.current) setStatus("actionError");
+      return;
+    }
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = fileName;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
   const onShare = async () => {
+    setStatus("ready"); // clear any prior action error
     const blob = await toBlob();
-    if (!blob) return setError(true);
+    if (!blob) {
+      if (mountedRef.current) setStatus("actionError");
+      return;
+    }
     const file = new File([blob], fileName, { type: "image/png" });
     const text = `🏃 ฉันวิ่ง "${data.routeName}" ${data.km} กม. ได้ ${data.points} แต้ม! #วิ่งรอบเกาะรัตนโกสินทร์`;
     try {
       await navigator.share({ files: [file], text });
     } catch {
-      /* user cancelled */
+      /* user cancelled — not an error */
     }
+  };
+
+  const redraw = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    setStatus("drawing");
+    drawRecapCard(canvas, data)
+      .then(() => {
+        if (mountedRef.current) setStatus("ready");
+      })
+      .catch(() => {
+        if (mountedRef.current) setStatus("drawError");
+      });
   };
 
   return (
@@ -88,20 +123,22 @@ export default function RecapShareModal({ data, onClose }: Props) {
         {/* preview: full-res canvas scaled down by CSS */}
         <div className="relative flex-1 overflow-hidden rounded-xl border border-line bg-card2">
           <canvas ref={canvasRef} className="h-auto w-full" />
-          {!ready && !error && (
+          {status === "drawing" && (
             <div className="absolute inset-0 flex items-center justify-center text-sm text-muted">กำลังสร้างรูป…</div>
           )}
         </div>
 
-        {error && (
+        {status === "drawError" && (
           <div className="mt-3 flex items-center justify-center gap-3 rounded-xl border border-accent bg-accent/8 p-2.5 text-xs text-accent">
             สร้างรูปไม่สำเร็จ
-            <button
-              onClick={() => canvasRef.current && drawRecapCard(canvasRef.current, data).then(() => { setError(false); setReady(true); }).catch(() => setError(true))}
-              className="font-bold underline underline-offset-2"
-            >
+            <button onClick={redraw} className="font-bold underline underline-offset-2">
               ลองใหม่
             </button>
+          </div>
+        )}
+        {status === "actionError" && (
+          <div className="mt-3 rounded-xl border border-accent bg-accent/8 p-2.5 text-center text-xs text-accent">
+            บันทึก/แชร์ไม่สำเร็จ ลองอีกครั้ง
           </div>
         )}
 
