@@ -17,6 +17,7 @@ import { useWakeLock } from "@/lib/useWakeLock";
 import StatsBar from "@/components/StatsBar";
 import CheckinToast from "@/components/CheckinToast";
 import SummaryModal from "@/components/SummaryModal";
+import ScanOverlay from "@/components/ScanOverlay";
 
 // แผนที่ต้องโหลดฝั่ง client เท่านั้น (Leaflet อ้าง window)
 const RunMap = dynamic(() => import("@/components/RunMap"), {
@@ -58,6 +59,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
   }, [routeId]);
 
   const [mode, setMode] = useState<RunMode>("sim");
+  const [scanning, setScanning] = useState(false);
   const s = useRunStore();
   const savedRef = useRef(false);
   const router = useRouter();
@@ -206,6 +208,14 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
           🏆 {s.points}
         </div>
 
+        {/* ปุ่มสแกน QR ระหว่างวิ่ง */}
+        <button
+          onClick={() => setScanning(true)}
+          className="absolute right-3 top-[124px] z-[600] flex items-center gap-1.5 rounded-full border border-line bg-card/90 px-3 py-1.5 text-xs font-bold backdrop-blur active:scale-95"
+        >
+          📷 สแกน QR
+        </button>
+
         <CheckinToast data={s.lastCheckin} onClose={() => useRunStore.getState().clearLastCheckin()} />
       </div>
 
@@ -251,6 +261,9 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
           onShare={onShare}
         />
       )}
+
+      {/* สแกน QR ระหว่างวิ่ง */}
+      {scanning && <ScanOverlay onClose={() => setScanning(false)} />}
     </main>
   );
 }

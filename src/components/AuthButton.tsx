@@ -32,7 +32,9 @@ export default function AuthButton() {
 
   return (
     <div className="flex items-center gap-2 text-[11px]">
-      <span className="text-muted">สวัสดี {name}</span>
+      <Link href="/profile" className="text-muted active:opacity-70">
+        สวัสดี <span className="font-bold text-accent">{name}</span>
+      </Link>
       <button onClick={signOut} className="font-bold text-accent active:opacity-70">
         ออก
       </button>
