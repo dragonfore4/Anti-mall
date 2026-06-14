@@ -24,16 +24,17 @@ export default function ScanOverlay({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (result) return;
     handledRef.current = false;
-    const scanner = new Html5Qrcode("qr-reader");
+    let scanner: Html5Qrcode | null = null;
     let started = false;
     let stopRequested = false;
 
     // หยุดกล้องอย่างปลอดภัย — stop() จะ throw ถ้าไม่ได้กำลังสแกนอยู่ จึงต้องเช็ค state ก่อน
     const safeStop = () => {
+      if (!scanner) return;
       try {
         const st = scanner.getState();
         if (st === Html5QrcodeScannerState.SCANNING || st === Html5QrcodeScannerState.PAUSED) {
-          scanner.stop().then(() => scanner.clear()).catch(() => {});
+          scanner.stop().then(() => scanner?.clear()).catch(() => {});
         }
       } catch {
         /* ยังไม่เริ่ม / หยุดไปแล้ว */
@@ -55,16 +56,22 @@ export default function ScanOverlay({ onClose }: { onClose: () => void }) {
       safeStop();
     };
 
-    scanner
-      .start({ facingMode: "environment" }, { fps: 10, qrbox: 240 }, handle, () => {})
-      .then(() => {
-        started = true;
-        if (stopRequested) safeStop(); // ถูกสั่งปิดก่อนกล้องเริ่มเสร็จ -> ปิดตอนนี้
-      })
-      .catch((e) => setCamError(String(e?.message ?? e)));
+    // หน่วงเล็กน้อยกัน StrictMode mount/unmount เร็ว ๆ -> ถ้าถูกทิ้งก่อน timer ทำงาน กล้องจะไม่เริ่มเลย
+    // (กัน AbortError จาก video.play() ที่ element ถูกถอดกลางคัน)
+    const timer = setTimeout(() => {
+      scanner = new Html5Qrcode("qr-reader");
+      scanner
+        .start({ facingMode: "environment" }, { fps: 10, qrbox: 240 }, handle, () => {})
+        .then(() => {
+          started = true;
+          if (stopRequested) safeStop();
+        })
+        .catch((e) => setCamError(String(e?.message ?? e)));
+    }, 120);
 
     return () => {
       stopRequested = true;
+      clearTimeout(timer);
       if (started) safeStop();
     };
   }, [result, nonce]);
