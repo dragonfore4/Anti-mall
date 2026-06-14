@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { checkpointById } from "@/data/checkpoints";
 import { repo } from "@/lib/storage";
 
@@ -25,11 +25,19 @@ export default function ScanOverlay({ onClose }: { onClose: () => void }) {
     if (result) return;
     handledRef.current = false;
     const scanner = new Html5Qrcode("qr-reader");
-    let stopped = false;
-    const stop = () => {
-      if (stopped) return;
-      stopped = true;
-      scanner.stop().then(() => scanner.clear()).catch(() => {});
+    let started = false;
+    let stopRequested = false;
+
+    // หยุดกล้องอย่างปลอดภัย — stop() จะ throw ถ้าไม่ได้กำลังสแกนอยู่ จึงต้องเช็ค state ก่อน
+    const safeStop = () => {
+      try {
+        const st = scanner.getState();
+        if (st === Html5QrcodeScannerState.SCANNING || st === Html5QrcodeScannerState.PAUSED) {
+          scanner.stop().then(() => scanner.clear()).catch(() => {});
+        }
+      } catch {
+        /* ยังไม่เริ่ม / หยุดไปแล้ว */
+      }
     };
 
     const handle = async (text: string) => {
@@ -44,14 +52,21 @@ export default function ScanOverlay({ onClose }: { onClose: () => void }) {
         if (status === "error") setResult({ kind: "error", msg: "บันทึกไม่สำเร็จ — เข้าสู่ระบบหรือยัง?" });
         else setResult({ kind: status, emoji: cp.emoji, name: cp.name });
       }
-      stop();
+      safeStop();
     };
 
     scanner
       .start({ facingMode: "environment" }, { fps: 10, qrbox: 240 }, handle, () => {})
+      .then(() => {
+        started = true;
+        if (stopRequested) safeStop(); // ถูกสั่งปิดก่อนกล้องเริ่มเสร็จ -> ปิดตอนนี้
+      })
       .catch((e) => setCamError(String(e?.message ?? e)));
 
-    return stop;
+    return () => {
+      stopRequested = true;
+      if (started) safeStop();
+    };
   }, [result, nonce]);
 
   const scanAgain = () => {
