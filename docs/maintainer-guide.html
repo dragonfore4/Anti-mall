@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>คู่มือ Maintainer — วิ่งรอบเกาะรัตนโกสินทร์</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chonburi&family=Sarabun:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4ecdd;
+        --paper: #fbf6ec;
+        --ink: #2a2118;
+        --muted: #7a6f5d;
+        --line: #ddd0b8;
+        --accent: #b23a2e; /* ชาดแดง */
+        --gold: #c9962b; /* ทอง */
+        --code-bg: #2a2118;
+        --code-fg: #f4ecdd;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Sarabun", system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.75;
+        background-image: radial-gradient(circle at 1px 1px, rgba(120, 100, 70, 0.06) 1px, transparent 0);
+        background-size: 22px 22px;
+      }
+      .wrap {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 40px 22px 90px;
+      }
+      header.masthead {
+        border-bottom: 3px double var(--accent);
+        padding-bottom: 18px;
+        margin-bottom: 8px;
+      }
+      .kicker {
+        font-size: 12px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h1 {
+        font-family: "Chonburi", serif;
+        font-weight: 400;
+        font-size: 40px;
+        line-height: 1.1;
+        margin: 10px 0 6px;
+        color: var(--ink);
+      }
+      .subtitle { color: var(--muted); margin: 0; }
+      h2 {
+        font-family: "Chonburi", serif;
+        font-weight: 400;
+        font-size: 25px;
+        margin: 46px 0 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        color: var(--accent);
+      }
+      h3 {
+        font-family: "Chonburi", serif;
+        font-weight: 400;
+        font-size: 18px;
+        margin: 26px 0 6px;
+      }
+      h3 .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.7em;
+        height: 1.7em;
+        margin-right: 0.5em;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--bg);
+        font-size: 14px;
+      }
+      a { color: var(--accent); }
+      code {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 0.85em;
+        background: rgba(178, 58, 46, 0.1);
+        color: #8a2c22;
+        padding: 1px 6px;
+        border-radius: 5px;
+      }
+      pre {
+        background: var(--code-bg);
+        color: var(--code-fg);
+        padding: 16px 18px;
+        border-radius: 12px;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.6;
+        border: 1px solid #000;
+      }
+      pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0;
+        font-size: 14.5px;
+      }
+      th, td {
+        text-align: left;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        font-family: "Chonburi", serif;
+        font-weight: 400;
+        color: var(--accent);
+        border-bottom: 2px solid var(--accent);
+      }
+      .star { color: var(--gold); }
+      .toc {
+        background: rgba(201, 150, 43, 0.08);
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--gold);
+        border-radius: 10px;
+        padding: 14px 20px;
+        margin: 24px 0;
+      }
+      .toc ol { margin: 6px 0 0; padding-left: 22px; }
+      .toc li { margin: 2px 0; }
+      .note {
+        background: rgba(178, 58, 46, 0.06);
+        border-left: 4px solid var(--accent);
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin: 16px 0;
+        font-size: 14.5px;
+      }
+      .heart { color: var(--accent); font-weight: 700; }
+      footer {
+        margin-top: 60px;
+        padding-top: 16px;
+        border-top: 3px double var(--accent);
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      .flow {
+        font-family: ui-monospace, monospace;
+        white-space: pre;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="masthead">
+        <div class="kicker">คู่มือผู้ดูแลระบบ · ฉบับเมืองเก่า</div>
+        <h1>วิ่งรอบเกาะรัตนโกสินทร์</h1>
+        <p class="subtitle">
+          เว็บแอพวิ่งเชิงวัฒนธรรม — GPS tracking + เกมสะสมแต้ม + เกร็ดความรู้มรดก ·
+          เอกสารนี้บอกว่าถ้าต้องมาดูแลต่อ ควร <strong>เริ่มอ่านฟังก์ชันไหนก่อน</strong>
+        </p>
+      </header>
+
+      <div class="toc">
+        <strong>ในเอกสารนี้</strong>
+        <ol>
+          <li><a href="#run">รันยังไง</a></li>
+          <li><a href="#flow">ภาพรวมระบบ (data flow)</a></li>
+          <li><a href="#start">🧭 เริ่มอ่านโค้ดจากตรงนี้ (8 สเต็ป)</a></li>
+          <li><a href="#tasks">🔧 งาน maintain ที่เจอบ่อย</a></li>
+          <li><a href="#gotchas">⚠️ Gotchas</a></li>
+          <li><a href="#map">📁 แผนผังไฟล์</a></li>
+        </ol>
+      </div>
+
+      <h2 id="run">รันยังไง</h2>
+      <pre><code>npm install
+npm run dev      # http://localhost:3000  (Turbopack)
+npm run build    # production build = ตรวจ type ทั้งโปรเจ็ค (ใช้แทน test)
+npm run start    # รัน production
+npm run lint</code></pre>
+      <p>
+        ต้องมีไฟล์ <code>.env.local</code> (ไม่ขึ้น git) ใส่ ORS API key:
+      </p>
+      <pre><code>ORS_API_KEY=&lt;key จาก openrouteservice.org/dev&gt;</code></pre>
+      <div class="note">
+        ไม่มี key ก็รันได้ — เส้นทางจะ <strong>fallback เป็นเส้นตรง</strong> (ไม่เกาะถนน)
+      </div>
+      <p>
+        <strong>Stack:</strong> Next.js 16 (App Router) · React 19 · TypeScript 6 · Tailwind v4
+        (CSS-first ไม่มีไฟล์ config) · react-leaflet 5 · zustand 5
+      </p>
+
+      <h2 id="flow">ภาพรวมระบบ (data flow)</h2>
+      <pre class="flow">data/checkpoints.ts          เลือกเส้นทาง           กดเริ่มวิ่ง
+ (พิกัด+แต้ม)       ──┐      (Basic/Advance)            │
+                      │             │                   ▼
+data/routes.ts ───────┤             ▼            ┌──────────────┐
+ basic() derive path  └──►  run/[routeId]/page  │ ลูป sim/gps   │
+                            │  snapToRoads()     │ ป้อนพิกัด     │
+                            │     │              └──────┬───────┘
+                            │     ▼ /api/route          ▼
+                            │   ORS (เกาะถนน)    store.pushPosition()
+                            │                    กรอง noise+นับระยะ
+                            ▼                    +เช็คอิน(+แต้ม+แคล)
+                          RunMap วาดแผนที่              │
+                                                       ▼
+                                                  finish → repo.addRun()
+                                                  (localStorage)</pre>
+
+      <h2 id="start">🧭 เริ่มอ่านโค้ดจากตรงนี้</h2>
+      <p>อ่านตาม 8 สเต็ปนี้แล้วเข้าใจทั้งระบบ แต่ละอันบอกว่า <em>ทำไมสำคัญ</em> และ <em>ดูอะไร</em></p>
+
+      <h3><span class="num">1</span><code>src/types.ts</code> — รูปร่างข้อมูลทั้งหมด</h3>
+      <p>
+        เริ่มที่นี่เสมอ ดู 3 interface หลัก: <code>Checkpoint</code> (หมุด),
+        <code>RouteDef</code> (เส้นทาง), <code>RunRecord</code> (ผลการวิ่งที่เซฟ)
+        เข้าใจ field พวกนี้แล้วที่เหลือตามง่าย
+      </p>
+
+      <h3><span class="num">2</span><code>src/data/checkpoints.ts</code> — แหล่งความจริงเดียวของหมุด <span class="star">⭐</span></h3>
+      <p>
+        <code>CHECKPOINTS</code> คือ array จุดมรดก ๑๐ จุด แต่ละจุดมี <code>coord: [lat,lng]</code>,
+        <code>points</code> (แต้ม), <code>fact</code> (เกร็ดความรู้)
+        <strong>พิกัด/แต้ม อยู่ที่นี่ที่เดียว</strong> — แก้ที่นี่แล้วทุกเส้นทางอัปเดตตาม
+        (แคลอรี่ย้ายไปเป็นค่า "ต่อช่วง" ใน routes.ts — ดูข้อ 3)
+      </p>
+
+      <h3><span class="num">3</span><code>src/data/routes.ts</code> — นิยามเส้นทาง Basic</h3>
+      <p>ดู 2 ฟังก์ชัน:</p>
+      <ul>
+        <li><code>checkpointPath(ids)</code> — แปลง id หมุด → พิกัดเรียงกัน (เส้นทางเริ่มต้น)</li>
+        <li>
+          <code>basic(spec)</code> — factory รับแค่ <code>checkpointIds</code> แล้ว
+          <strong>เติม <code>path</code> + <code>distanceKm</code> + <code>legCalories</code> ให้อัตโนมัติ</strong>
+          เพิ่มเส้นทางใหม่แค่ก๊อป block ใส่ id หมุด ไม่ต้องพิมพ์พิกัดเอง
+        </li>
+        <li>
+          <code>legCalories: number[]</code> — แคลอรี่ <strong>ต่อช่วง</strong> (leg) ยาว = จำนวนหมุด − 1
+          เช่น <code>[90, 70, 130]</code> = ช่วง ๑→๒ ได้ 90, ๒→๓ ได้ 70, ๓→๔ ได้ 130 ·
+          กรอกเองหรือเว้นไว้ให้คิดจากระยะ (<code>legCaloriesFromPath</code>)
+        </li>
+      </ul>
+
+      <h3><span class="num">4</span><code>src/store/runStore.ts</code> — <code>pushPosition()</code> คือหัวใจ <span class="star">⭐⭐⭐</span></h3>
+      <p><strong>ฟังก์ชันสำคัญที่สุดในโปรเจ็ค</strong> เรียกทุกครั้งที่ได้ตำแหน่งใหม่ (sim หรือ GPS) ทำ 4 อย่างเรียงกัน:</p>
+      <ol>
+        <li><strong>กรอง noise</strong> — ตำแหน่งกระโดด &gt; 200ม. (<code>GPS_JUMP_MAX_M</code>) ทิ้ง</li>
+        <li><strong>บวกระยะทาง</strong> (Haversine)</li>
+        <li><strong>ต่อ trace</strong> (เส้นน้ำเงินที่วิ่งจริง)</li>
+        <li><strong>เช็คอิน</strong> — วน checkpointIds ถ้าเข้าใกล้หมุดที่ index <code>i</code> &lt; 45ม. (<code>CHECKIN_RADIUS_M</code>) และยังไม่เคยเช็คอิน → บวกแต้ม + บวกแคลของช่วงที่เพิ่งวิ่งมา (<code>route.legCalories[i-1]</code>, จุดเริ่ม = 0) + เด้ง toast</li>
+      </ol>
+      <p>action อื่น <code>begin/tick/finish/reset</code> ตรงไปตรงมา</p>
+
+      <h3><span class="num">5</span><code>src/app/run/[routeId]/page.tsx</code> — ตัวประสานงาน</h3>
+      <p>หน้าวิ่งจริง รวมทุกอย่างผ่าน <code>useEffect</code> 4 ตัว:</p>
+      <ol>
+        <li><strong>หา route + ดัดเส้นเกาะถนน</strong> — โหลด route แล้วเรียก <code>snapToRoads()</code> (โชว์เส้นตรงก่อน → อัปเกรดเมื่อ ORS ตอบ)</li>
+        <li><strong>ลูปติดตามตำแหน่ง</strong> — sim: <code>setInterval</code> ป้อน <code>densify(path)</code> ทุก 180ms / gps: <code>watchPosition</code> + <code>tick</code> 500ms</li>
+        <li><strong>เซฟตอนจบ</strong> — <code>repo.addRun()</code> ครั้งเดียว (กันซ้ำด้วย <code>savedRef</code>)</li>
+        <li><strong>reset ตอนออกจากหน้า</strong></li>
+      </ol>
+
+      <h3><span class="num">6</span><code>snapToRoads.ts</code> + <code>api/route/route.ts</code> — เส้นเกาะถนน (ORS)</h3>
+      <ul>
+        <li><code>snapToRoads(points)</code> (client) — POST ไป <code>/api/route</code>, มี <strong>cache</strong> + <strong>fallback เส้นตรง</strong> ถ้าล่ม</li>
+        <li><code>route.ts</code> (server) — proxy เรียก ORS <code>foot-walking</code>, <strong>เก็บ API key ฝั่ง server เท่านั้น</strong>, แปลงพิกัด <code>[lat,lng]</code>↔<code>[lng,lat]</code></li>
+      </ul>
+
+      <h3><span class="num">7</span><code>lib/geo.ts</code> + <code>lib/stats.ts</code> — คณิต/ค่าคงที่</h3>
+      <ul>
+        <li><code>geo.ts</code>: <code>distanceM</code> (Haversine), <code>pathLengthM</code>, <code>densify</code> (แตกจุดถี่ให้ sim ลื่น), <code>metersToKm</code>, <code>legCaloriesFromPath</code> (แคลต่อช่วงคิดจากระยะ), <code>centroid</code></li>
+        <li><code>stats.ts</code>: <code>steps()</code> (ประมาณก้าว = ระยะ ÷ 0.75ม.), <code>formatTime</code>, ค่าคงที่เช็คอิน/กรอง GPS</li>
+      </ul>
+      <div class="note">
+        แคลอรี่ <strong>ไม่ใช้สูตร MET แล้ว</strong> — เป็นค่า <strong>ต่อช่วง</strong> กำหนดใน <code>legCalories</code> ของแต่ละเส้นทาง (routes.ts) บวกสะสมตอนเช็คอินใน store
+      </div>
+
+      <h3><span class="num">8</span><code>src/lib/routeGen.ts</code> — โหมด Advance</h3>
+      <p>
+        อ่าน top-down: <code>pickCheckpoints()</code> (คัดจุดตามย่าน/มรดก) →
+        <code>orderByNearestNeighbour()</code> (เรียงให้ต่อเนื่อง) →
+        <code>generateAdvanceRoute()</code> ประกอบเป็น <code>RouteDef</code>
+      </p>
+      <p style="color: var(--muted); font-size: 14px">
+        (เสริม) <code>components/RunMap.tsx</code> วาดแผนที่ client-only ·
+        <code>lib/storage.ts</code> <code>RunRepository</code> ออกแบบให้สลับเป็น Supabase ได้โดยไม่แตะหน้าเว็บ
+      </p>
+
+      <h2 id="tasks">🔧 งาน maintain ที่เจอบ่อย</h2>
+      <table>
+        <tr><th>อยากทำ</th><th>แก้ที่</th></tr>
+        <tr><td>เพิ่ม/แก้หมุด หรือเปลี่ยนพิกัด/แต้ม/เกร็ดความรู้</td><td><code>data/checkpoints.ts</code> — เพิ่ม object ใน <code>CHECKPOINTS</code></td></tr>
+        <tr><td>เปลี่ยนแคลอรี่ต่อช่วง (leg)</td><td><code>data/routes.ts</code> — แก้ array <code>legCalories</code> ของเส้นทางนั้น</td></tr>
+        <tr><td>เพิ่มเส้นทาง Basic</td><td><code>data/routes.ts</code> — ก๊อป <code>basic({...})</code> ใส่ id หมุด + <code>legCalories</code> (หรือเว้นให้คิดจากระยะ)</td></tr>
+        <tr><td>ปรับรัศมีเช็คอิน / เกณฑ์กรอง GPS</td><td><code>lib/stats.ts</code> — <code>CHECKIN_RADIUS_M</code>, <code>GPS_JUMP_MAX_M</code></td></tr>
+        <tr><td>เปลี่ยนความยาวก้าวที่ใช้ประมาณ</td><td><code>lib/stats.ts</code> — <code>STEP_LEN_M</code></td></tr>
+        <tr><td>เปลี่ยน base map / สีเส้นทาง</td><td><code>components/RunMap.tsx</code> — <code>TileLayer</code> / <code>Polyline</code></td></tr>
+        <tr><td>เปลี่ยนโปรไฟล์ routing (เดิน→ปั่น)</td><td><code>app/api/route/route.ts</code> — <code>foot-walking</code></td></tr>
+        <tr><td>ปรับธีม/สี/ฟอนต์</td><td><code>app/globals.css</code> — บล็อก <code>@theme</code></td></tr>
+        <tr><td>ต่อ backend จริง</td><td>เขียน <code>SupabaseRepo implements RunRepository</code> แล้วสลับ <code>repo</code> ใน <code>lib/storage.ts</code></td></tr>
+      </table>
+
+      <h2 id="gotchas">⚠️ Gotchas (เคยเจอจริง)</h2>
+      <ul>
+        <li><strong>callback ที่ส่งให้ component ที่ re-render ถี่ ต้องเก็บใน <code>ref</code></strong> ไม่งั้น <code>setTimeout</code> ใน effect ถูกรีเซ็ตทุก frame (toast เคยปิดไม่ได้เพราะเหตุนี้ — ดู <code>CheckinToast.tsx</code>)</li>
+        <li><strong>ใน dev เห็น <code>POST /api/route</code> ยิง 2 ครั้ง/หน้า</strong> = React StrictMode เรียก effect ซ้ำ — production ยิงครั้งเดียว</li>
+        <li><strong>Next 16: <code>params</code> เป็น Promise</strong> ต้อง unwrap ด้วย <code>use(params)</code></li>
+        <li><strong>Leaflet ต้องโหลด client-only</strong> — <code>RunMap</code> import แบบ <code>dynamic(..., {ssr:false})</code></li>
+        <li><strong>GPS จริงบนมือถือต้องใช้ HTTPS</strong> (localhost ยกเว้น) — เดโมผ่าน LAN IP ใช้โหมดจำลองแทน</li>
+      </ul>
+
+      <h2 id="map">📁 แผนผังไฟล์</h2>
+      <pre class="flow">src/
+├── app/
+│   ├── page.tsx                 หน้าแรก (hero + เปรียบเทียบ + โหมด + แต้ม)
+│   ├── routes/                  เลือกเส้นทาง Basic
+│   ├── build/                   โหมด Advance
+│   ├── run/[routeId]/           ★ หน้าวิ่ง (orchestrator)
+│   ├── history/ · rewards/      ประวัติ · แต้ม/เหรียญ
+│   ├── api/route/               proxy ORS (server)
+│   ├── layout.tsx · globals.css ฟอนต์ + ธีม
+├── components/                  RunMap · CheckinToast · StatsBar · SummaryModal · RouteCard · HeroStats
+├── data/                        checkpoints ⭐ · routes · options · rewards
+├── lib/                         geo · stats · routeGen · snapToRoads · storage · useWakeLock
+├── store/runStore.ts            ★ state การวิ่ง (pushPosition)
+└── types.ts                     รูปร่างข้อมูล</pre>
+      <p style="font-size: 14px; color: var(--muted)"><span class="star">⭐</span> = จุดที่ควรอ่าน/ระวังที่สุด</p>
+
+      <footer>◆ วิ่งช้า ๆ มองเมืองให้ทัน ◆</footer>
+    </div>
+  </body>
+</html>

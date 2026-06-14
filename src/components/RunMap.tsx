@@ -127,21 +127,27 @@ export default function RunMap({ route, trace, current, checkedIn }: Props) {
 
       {/* หมุดจุดเช็คอิน (จุดแรก = เริ่ม, จุดสุดท้าย = เส้นชัย) */}
       {route.checkpointIds.map((id, idx) => {
-        const cp = checkpointById(id);
-        if (!cp) return null;
+        const checkpoint = checkpointById(id);
+        if (!checkpoint) return null;
         const role: Role =
           idx === 0 ? "start" : idx === route.checkpointIds.length - 1 ? "finish" : "normal";
         const done = checkedIn.includes(id);
         return (
-          <Marker key={id} position={cp.ll} icon={checkpointIcon(role, done)}>
+          <Marker key={id} position={checkpoint.coord} icon={checkpointIcon(role, done)}>
             <Popup>
-              <b>{cp.name}</b>
+              <b>{checkpoint.name}</b>
               {role === "start" && <span style={{ color: "#16a34a" }}> (จุดเริ่ม)</span>}
               {role === "finish" && <span style={{ color: "#ff7a59" }}> (เส้นชัย)</span>}
               <br />
-              {cp.fact}
+              {checkpoint.fact}
               <br />
-              <span style={{ color: "#16a34a" }}>+{cp.pts} แต้ม</span>
+              <span style={{ color: "#16a34a" }}>+{checkpoint.points} แต้ม</span>
+              {idx > 0 && (
+                <span style={{ color: "#ff7a59" }}>
+                  {" "}
+                  · 🔥 {route.legCalories?.[idx - 1] ?? 0} แคล (ช่วงก่อนถึงจุดนี้)
+                </span>
+              )}
             </Popup>
           </Marker>
         );

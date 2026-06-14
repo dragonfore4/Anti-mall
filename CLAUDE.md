@@ -2,7 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-โปรเจ็คจริง (Next.js) ของ "วิ่งรอบเกาะรัตนโกสินทร์" — เว็บแอพวิ่งเชิงท่องเที่ยววัฒนธรรม รวม GPS tracking + เกมสะสมแต้ม + เกร็ดความรู้มรดก ดูคอนเซ็ปต์/ฟีเจอร์ภาพรวมที่ `../CLAUDE.md` (ราก) ไฟล์นี้เน้นสถาปัตยกรรมของโค้ดจริงในโฟลเดอร์ `web/`
+โปรเจ็คจริง (Next.js) ของ "วิ่งรอบเกาะรัตนโกสินทร์" — เว็บแอพวิ่งเชิงท่องเที่ยววัฒนธรรม รวม GPS tracking + เกมสะสมแต้ม + เกร็ดความรู้มรดก + Google login + สแกน QR สะสมเหรียญ ดูคอนเซ็ปต์/ฟีเจอร์ภาพรวมที่ `../CLAUDE.md` (ราก) ไฟล์นี้เน้นสถาปัตยกรรมของโค้ดจริงในโฟลเดอร์ `web/`
+
+> เอกสารเสริม: คู่มือ maintainer [`README.md`](README.md) / [`docs/maintainer-guide.html`](docs/maintainer-guide.html) · อธิบาย routes.ts ละเอียด [`docs/routes-explained.md`](docs/routes-explained.md) · ตั้งค่า Supabase+Google [`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md)
 
 ## คำสั่ง
 
@@ -13,49 +15,66 @@ npm run start    # รัน production build
 npm run lint     # next lint
 ```
 
-ไม่มี test runner ในโปรเจ็คนี้ การ "ตรวจว่าพัง/ไม่พัง" ใช้ `npm run build` (คอมไพล์ TypeScript ทั้งหมด) หรือดู dev log
+- ไม่มี test runner — "ตรวจว่าพัง/ไม่พัง" ใช้ `npm run build` (คอมไพล์ TypeScript ทั้งหมด) หรือดู dev log
+- **`.env.local`** (ไม่ขึ้น git) ต้องมี: `ORS_API_KEY` (เส้นทางเกาะถนน) + `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` (auth/cloud) — ถ้าไม่ใส่ Supabase แอพยังรันได้ในโหมด local (ดู Persistence)
 
 ## Stack (เวอร์ชันล่าสุด — ตั้งใจ pin ใหม่)
 
-Next.js 16 (App Router) · React 19 · TypeScript 6 · **Tailwind v4 (CSS-first)** · react-leaflet 5 + leaflet 1.9.4 · zustand 5
+Next.js 16 (App Router) · React 19 · TypeScript 6 · **Tailwind v4 (CSS-first)** · react-leaflet 5 + leaflet 1.9.4 · zustand 5 · **@supabase/supabase-js + @supabase/ssr** (auth/db) · **html5-qrcode** (สแกน) · **qrcode** (สร้าง QR ทดสอบ)
 
-- **Tailwind v4 ไม่มี `tailwind.config.ts`** — ธีมอยู่ในบล็อก `@theme` ของ [src/app/globals.css](src/app/globals.css) ทั้งหมด, PostCSS ใช้ `@tailwindcss/postcss`
-- **Next 16**: `params` เป็น `Promise` — หน้า dynamic ต้อง unwrap ด้วย `use(params)` (ดู [run/[routeId]/page.tsx](src/app/run/[routeId]/page.tsx))
+- **Tailwind v4 ไม่มี `tailwind.config.ts`** — ธีมอยู่ในบล็อก `@theme` ของ [src/app/globals.css](src/app/globals.css), PostCSS ใช้ `@tailwindcss/postcss`
+- **Next 16**: `params` เป็น `Promise` — หน้า dynamic ต้อง unwrap ด้วย `use(params)`; `cookies()` ก็เป็น async (`await cookies()` ใน server client)
 
 ## สถาปัตยกรรมหลัก (อ่านก่อนแก้)
 
 ### ชั้นข้อมูล: หมุดคือแหล่งความจริงเดียว
-- [data/checkpoints.ts](src/data/checkpoints.ts) เก็บพิกัด `ll: [lat,lng]` จริงของหมุดมรดกทั้ง ๙ จุด **ที่เดียว** + แต้ม/เกร็ดความรู้
-- [data/routes.ts](src/data/routes.ts) นิยามเส้นทาง Basic ด้วย factory `basic({...})` ที่รับแค่ `checkpointIds` แล้ว **derive `path` + `distanceKm` อัตโนมัติ** ผ่าน `checkpointPath()` — อย่าพิมพ์พิกัด `path` มือ (ใส่ override ได้ถ้าจำเป็น)
-- ผลลัพธ์: `route.path` = พิกัดหมุดเรียงตามลำดับเสมอ ทั้ง Basic และ Advance ([routeGen.ts](src/lib/routeGen.ts) ก็ map checkpoint → ll เหมือนกัน)
+- [data/checkpoints.ts](src/data/checkpoints.ts) เก็บ `coord: [lat,lng]` จริงของหมุดมรดกทั้ง ๑๐ จุด **ที่เดียว** + `points` (แต้ม) + `emoji` (หน้าเหรียญ) + `fact`
+- **`CheckpointId`** (union ของ id หมุดทั้งหมด) นิยามใน [types.ts](src/types.ts) ใช้กับ `Checkpoint.id` และ `RouteDef.checkpointIds` → พิมพ์ id ผิด TS ฟ้องตั้งแต่ compile + บังคับ sync กับ CHECKPOINTS (เพิ่มหมุดต้องเพิ่มใน union)
+- [data/routes.ts](src/data/routes.ts) นิยามเส้นทาง Basic ด้วย factory `basic({...})` รับแค่ `checkpointIds` แล้ว **derive `path` + `distanceKm` + `legCalories` + `kind` อัตโนมัติ** — อย่าพิมพ์ `path` มือ (override ได้)
+- **แคลอรี่เป็นค่าต่อช่วง (leg)** เก็บใน `legCalories: number[]` (ยาว = จำนวนหมุด − 1) เช็คอินถึงหมุดที่ N → ได้ `legCalories[N-1]` · ไม่กรอก = คิดจากระยะ (`legCaloriesFromPath` ใน geo.ts) · Advance ใช้ fallback นี้
 
 ### เส้นทางเกาะถนนจริง (OpenRouteService)
-- `route.path` เป็นแค่เส้นตรงเชื่อมหมุด → ต้อง "ดัด" ให้เกาะถนนผ่าน ORS **Directions V2 (`foot-walking`)**
-- Flow: หน้าวิ่ง → [lib/snapToRoads.ts](src/lib/snapToRoads.ts) (มี cache + fallback เส้นตรงถ้าล่ม) → POST `/api/route` ([app/api/route/route.ts](src/app/api/route/route.ts)) ที่แนบ key ฝั่ง server → ORS
-- **`ORS_API_KEY` อยู่ใน `.env.local` ฝั่ง server เท่านั้น** ห้ามยิง ORS จาก client ตรง ๆ (key หลุด)
-- ORS ใช้ลำดับ `[lng,lat]` แต่ทั้งแอพใช้ `[lat,lng]` แบบ Leaflet — route handler แปลงกลับให้
+- `route.path` เป็นแค่เส้นตรงเชื่อมหมุด → "ดัด" ให้เกาะถนนผ่าน ORS **Directions V2 (`foot-walking`)**
+- Flow: หน้าวิ่ง → [lib/snapToRoads.ts](src/lib/snapToRoads.ts) (cache + fallback เส้นตรงถ้าล่ม) → POST `/api/route` ([app/api/route/route.ts](src/app/api/route/route.ts)) แนบ key ฝั่ง server → ORS
+- **`ORS_API_KEY` อยู่ฝั่ง server เท่านั้น** · ORS ใช้ `[lng,lat]` แต่ทั้งแอพใช้ `[lat,lng]` แบบ Leaflet — route handler แปลงให้
+
+### Auth: Supabase + Google login
+- [lib/supabase/client.ts](src/lib/supabase/client.ts) — browser client **memoize เป็น singleton** (กัน "Multiple GoTrueClient") + `isSupabaseConfigured` (เช็ก env)
+- [lib/supabase/server.ts](src/lib/supabase/server.ts) — server client ผูก cookie · [middleware.ts](middleware.ts) — รีเฟรช session ทุก request (ข้ามถ้าไม่ตั้ง env)
+- Flow: [/login](src/app/login/page.tsx) (`signInWithOAuth` google) → [/auth/callback](src/app/auth/callback/route.ts) (`exchangeCodeForSession` → ถ้าโปรไฟล์ไม่ครบเด้ง [/onboarding](src/app/onboarding/page.tsx)) → กรอกชื่อ/นามสกุล/วันเกิด เก็บตาราง `profiles` · แก้โปรไฟล์ที่ [/profile](src/app/profile/page.tsx) (คำนวณอายุจาก dob)
+- [lib/useUser.ts](src/lib/useUser.ts) hook อ่าน session ฝั่ง client · [AuthButton](src/components/AuthButton.tsx) บน masthead
+- **Soft gating**: ดูหน้าแรก/เส้นทางได้เลย — แต่ **เริ่มวิ่ง / สแกน QR / โปรไฟล์** ต้อง login ก่อน (เฉพาะเมื่อ `isSupabaseConfigured`)
+
+### ข้อมูลผู้ใช้: RunRepository (async) → Supabase หรือ Local
+- [lib/storage.ts](src/lib/storage.ts): `interface RunRepository` (เมธอด **async** คืน Promise) — `getRuns / addRun / totalPoints / getAchievements / unlockAchievement` + `saveDraftRoute / getDraftRoute` (เก็บ local sync, ส่งต่อ build→run)
+- เลือก implementation ตอน import: **`isSupabaseConfigured ? SupabaseRepo : LocalRepo`** → ตั้งค่า Supabase แล้วใช้ cloud (ต่อ user), ยังไม่ตั้ง = localStorage (เดโมรันได้ก่อน setup)
+- ตาราง Supabase: `profiles` / `runs` / `achievements` + **RLS ต่อ user** (สร้างด้วย [supabase/schema.sql](supabase/schema.sql))
+- SupabaseRepo **กรอง `.eq("user_id", uid)` เอง** (ไม่พึ่ง RLS อย่างเดียว) · `unlockAchievement` ใช้ `upsert({ignoreDuplicates})` ไม่พึ่งรหัส error
+- ⚠️ anon key เป็น **public ได้** (ออกแบบมาแบบนั้น) — ความปลอดภัยจริงคือ RLS; ห้ามเอา `service_role` key มาใส่ `NEXT_PUBLIC_`
 
 ### State การวิ่ง: zustand store
-- [store/runStore.ts](src/store/runStore.ts) เก็บ status/trace/distance/points/checkedIn ฯลฯ
-- **`pushPosition()` คือหัวใจ** — ทุกตำแหน่งใหม่ (จาก sim หรือ GPS) เข้าฟังก์ชันนี้: กรอง noise (ทิ้ง jump > `GPS_JUMP_MAX_M` 200ม.) → บวกระยะ (Haversine) → ต่อ trace → ตรวจ check-in (เข้าใกล้หมุด < `CHECKIN_RADIUS_M` 45ม. → +แต้ม + เด้ง toast)
-- 2 โหมดป้อนตำแหน่งเข้าฟังก์ชันเดียวกัน: **sim** = `densify(route.path)` แล้ว step ทุก 180ms / **gps** = `watchPosition`
-- ค่าคงที่/สูตร (น้ำหนัก, MET, ก้าว) อยู่ [lib/stats.ts](src/lib/stats.ts); geo math (Haversine/densify/centroid) อยู่ [lib/geo.ts](src/lib/geo.ts)
+- [store/runStore.ts](src/store/runStore.ts) เก็บ status/trace/distance/points/calories/checkedIn ฯลฯ
+- **`pushPosition(coord)` คือหัวใจ** — ทุกตำแหน่งใหม่ (sim/GPS): กรอง noise (jump > `GPS_JUMP_MAX_M` 200ม. = ทิ้ง) → บวกระยะ (Haversine) → ต่อ trace → check-in (หมุดที่ index `i` < `CHECKIN_RADIUS_M` 45ม. → +`points` + แคลของช่วง `route.legCalories?.[i-1]` + toast)
+- 2 โหมดเข้าฟังก์ชันเดียวกัน: **sim** = `densify(route.path)` step ทุก 180ms / **gps** = `watchPosition`
+- หน้าวิ่ง [run/[routeId]/page.tsx](src/app/run/[routeId]/page.tsx) เซฟผลตอนจบผ่าน `repo.addRun()` — ถ้าพลาดมี **ปุ่มลองใหม่** (ไม่หายเงียบ)
 
-### Persistence: สลับ backend ได้
-- [lib/storage.ts](src/lib/storage.ts) เป็น `RunRepository` interface ปัจจุบัน `LocalRepo` (localStorage) — **ออกแบบให้สลับเป็น Supabase ได้โดยไม่แตะหน้าเว็บ** (มีคอมเมนต์จุดเสียบ) ทุกการอ่าน/เขียน localStorage มี guard `typeof window` ให้ SSR ผ่าน
+### QR + Achievements (เหรียญสถานที่)
+- [components/ScanOverlay.tsx](src/components/ScanOverlay.tsx) — scanner ใช้ซ้ำได้ (prop `modal`: เต็มจอ=หน้า /scan, การ์ดกลางจอ=ปุ่มในหน้าวิ่ง); อ่าน QR payload **`rk:cp:<checkpointId>`** → `repo.unlockAchievement(id)`
+- กล้องใช้ **serialize teardown** (รอ stop รอบก่อนเสร็จก่อน start ใหม่) + `cancelled` guard — กันชนกันตอนสลับกล้องหน้า/หลัง/remount
+- [/scan](src/app/scan/page.tsx) (gate login) · [/scan/codes](src/app/scan/codes/page.tsx) (สร้าง QR ทุกจุดด้วย `qrcode` ไว้ทดสอบ) · [/achievements](src/app/achievements/page.tsx) (เหรียญ ๑๐ ใบ derive จาก CHECKPOINTS)
 
 ### แผนที่
-- [components/RunMap.tsx](src/components/RunMap.tsx) เป็น client-only — หน้าวิ่ง **dynamic import ด้วย `ssr: false`** เพราะ Leaflet อ้าง `window`
-- วาด 4 ชั้น: เส้นทางที่ควรวิ่ง (ชาดแดง ประ) + ลูกศรทิศทาง (divIcon หมุนตาม bearing) + trace ที่วิ่งจริง (น้ำเงิน) + หมุด (จุดแรก=เริ่ม, สุดท้าย=เส้นชัย, เช็คอินแล้ว=✓)
+- [components/RunMap.tsx](src/components/RunMap.tsx) client-only — **dynamic import `ssr: false`** (Leaflet อ้าง `window`)
+- วาด: เส้นทางควรวิ่ง (ชาดแดง ประ) + ลูกศรทิศทาง (divIcon หมุนตาม bearing) + trace จริง (น้ำเงิน) + หมุด (จุดแรก=เริ่ม, สุดท้าย=เส้นชัย, เช็คอินแล้ว=✓)
 
 ## ธีม UI "กระดาษสา" (นิตยสารมรดก)
-- Light theme: พื้นกระดาษครีม + ชาดแดง (`--color-accent`) + ทองอ่อน (`--color-accent2`) + หมึกดำ (`--color-ink`) — token ทั้งหมดใน `@theme` ของ globals.css (utility เช่น `bg-card`, `text-accent`, `text-ink`, `border-line`)
-- ฟอนต์โหลดด้วย **next/font** ใน [layout.tsx](src/app/layout.tsx): **Chonburi** (display, `font-display`) + **Sarabun** (body, `font-sans`) ผูกผ่าน CSS var
-- คลาส decorative ใช้ซ้ำ: `.kicker` `.rule-double` `.card-paper` `.hatch` `.rise` (staggered reveal) `.livedot`
-- ใช้เลขไทย (๐๑/๐๒) ใน UI เชิงตกแต่งเป็นเอกลักษณ์
+- Light theme: พื้นกระดาษครีม + ชาดแดง (`--color-accent`) + ทองอ่อน (`--color-accent2`) + หมึกดำ (`--color-ink`) — token ใน `@theme` ของ globals.css
+- ฟอนต์ **next/font** ([layout.tsx](src/app/layout.tsx)): **Chonburi** (display, `font-display`) + **Sarabun** (body, `font-sans`)
+- คลาส decorative: `.kicker` `.rule-double` `.card-paper` `.hatch` `.rise` `.livedot` · ใช้เลขไทยใน UI เชิงตกแต่ง
 
 ## ข้อควรระวัง (gotcha ที่เคยเจอ)
-- **callback ที่ส่งให้ component ที่ re-render ถี่** (เช่น ตอนวิ่ง) ต้องเก็บใน `ref` ไม่งั้น effect ที่ตั้ง timer จะถูกรีเซ็ตทุก frame — ดู pattern ใน [components/CheckinToast.tsx](src/components/CheckinToast.tsx)
-- ใน dev จะเห็น `POST /api/route` ยิง 2 ครั้งต่อการเข้าหน้า = React StrictMode (effect ซ้ำ) ตอน build จริงยิงครั้งเดียว
-- ลินเตอร์เตือน `bg-gradient-to-br` → `bg-linear-to-br` เป็นแค่ alias เดิม (v4 ยังใช้ได้) คงไว้ให้เหมือนทั้งโปรเจ็คได้
+- **react-leaflet + html5-qrcode พังกับ React StrictMode double-mount (dev)** → `Map container is being reused`, camera `AbortError` · แก้โดย `reactStrictMode: false` ใน [next.config.mjs](next.config.mjs) (มีผลแค่ dev) — โค้ดกล้อง/แผนที่ก็ป้องกัน double-mount ไว้ระดับนึงแล้ว
+- **callback ที่ส่งให้ component re-render ถี่ ต้องเก็บใน `ref`** ไม่งั้น `setTimeout` ใน effect ถูกรีเซ็ตทุก frame (ดู [CheckinToast.tsx](src/components/CheckinToast.tsx))
+- **Supabase client memoize เป็น singleton** — อย่ากลับไปสร้างใหม่ทุก call (จะเตือน Multiple GoTrueClient)
+- กล้อง + GPS จริงบนมือถือ **ต้อง HTTPS** (localhost ยกเว้น) — เดโมผ่าน cloudflared tunnel
 - `next-env.d.ts` / `tsconfig.json` ถูก Next แก้อัตโนมัติตอน build — อย่า revert

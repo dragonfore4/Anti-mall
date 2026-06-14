@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { RunRecord } from "@/types";
 import { repo } from "@/lib/storage";
-import { fmtTime } from "@/lib/stats";
+import { formatTime } from "@/lib/stats";
 
 export default function HistoryPage() {
   const [runs, setRuns] = useState<RunRecord[]>([]);
-  useEffect(() => setRuns(repo.getRuns()), []);
+  useEffect(() => {
+    repo.getRuns().then(setRuns);
+  }, []);
 
   return (
     <main className="min-h-[100dvh] px-6 pb-12 pt-6">
@@ -55,7 +57,7 @@ export default function HistoryPage() {
                   <b className="font-display text-ink">{r.km}</b> กม.
                 </span>
                 <span>
-                  <b className="font-display text-ink">{fmtTime(r.elapsedMs)}</b>
+                  <b className="font-display text-ink">{formatTime(r.elapsedMs)}</b>
                 </span>
                 <span>
                   <b className="font-display text-ink">{r.calories}</b> แคล

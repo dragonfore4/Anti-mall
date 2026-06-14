@@ -16,12 +16,13 @@ interface RunState {
   elapsedMs: number;
 
   points: number;
+  calories: number; // แคลอรี่สะสม (บวกตามจุดที่เช็คอิน)
   checkedIn: string[]; // id ของจุดที่เช็คอินแล้ว
-  lastCheckin: { name: string; fact: string; pts: number } | null;
+  lastCheckin: { name: string; fact: string; points: number; calories: number } | null;
 
   // actions
   begin: (route: RouteDef, mode: RunMode) => void;
-  pushPosition: (ll: LatLng) => void;
+  pushPosition: (coord: LatLng) => void;
   tick: () => void;
   finish: () => void;
   reset: () => void;
@@ -38,6 +39,7 @@ export const useRunStore = create<RunState>((set, get) => ({
   startTime: 0,
   elapsedMs: 0,
   points: 0,
+  calories: 0,
   checkedIn: [],
   lastCheckin: null,
 
@@ -52,41 +54,51 @@ export const useRunStore = create<RunState>((set, get) => ({
       startTime: Date.now(),
       elapsedMs: 0,
       points: 0,
+      calories: 0,
       checkedIn: [],
       lastCheckin: null,
     }),
 
-  pushPosition: (ll) => {
+  pushPosition: (coord) => {
     const s = get();
     if (s.status !== "running") return;
 
     // สะสมระยะ + กรอง noise (ตัดจุดที่กระโดดไกลผิดปกติ)
     let dist = s.distanceM;
     if (s.current) {
-      const d = distanceM(s.current, ll);
+      const d = distanceM(s.current, coord);
       if (d < GPS_JUMP_MAX_M) dist += d;
     }
 
     // ตรวจ check-in จุดที่ยังไม่เคยเช็คอิน
-    let { points, checkedIn, lastCheckin } = s;
+    let { points, calories, checkedIn, lastCheckin } = s;
     const route = s.route;
     if (route) {
-      for (const cpId of route.checkpointIds) {
-        if (checkedIn.includes(cpId)) continue;
-        const cp = checkpointById(cpId);
-        if (cp && distanceM(ll, cp.ll) <= CHECKIN_RADIUS_M) {
-          checkedIn = [...checkedIn, cpId];
-          points += cp.pts;
-          lastCheckin = { name: cp.name, fact: cp.fact, pts: cp.pts };
+      route.checkpointIds.forEach((checkpointId, i) => {
+        if (checkedIn.includes(checkpointId)) return;
+        const checkpoint = checkpointById(checkpointId);
+        if (checkpoint && distanceM(coord, checkpoint.coord) <= CHECKIN_RADIUS_M) {
+          // แคลของช่วงที่เพิ่งวิ่งมา (จุดก่อนหน้า -> จุดนี้) จุดเริ่มไม่มีช่วง = 0
+          const legCalories = i === 0 ? 0 : (route.legCalories?.[i - 1] ?? 0);
+          checkedIn = [...checkedIn, checkpointId];
+          points += checkpoint.points;
+          calories += legCalories;
+          lastCheckin = {
+            name: checkpoint.name,
+            fact: checkpoint.fact,
+            points: checkpoint.points,
+            calories: legCalories,
+          };
         }
-      }
+      });
     }
 
     set({
-      current: ll,
-      trace: [...s.trace, ll],
+      current: coord,
+      trace: [...s.trace, coord],
       distanceM: dist,
       points,
+      calories,
       checkedIn,
       lastCheckin,
     });
@@ -110,6 +122,7 @@ export const useRunStore = create<RunState>((set, get) => ({
       startTime: 0,
       elapsedMs: 0,
       points: 0,
+      calories: 0,
       checkedIn: [],
       lastCheckin: null,
     }),
