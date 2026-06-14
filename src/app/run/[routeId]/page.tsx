@@ -293,8 +293,9 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         </div>
       )}
 
-      {/* สแกน QR ระหว่างวิ่ง (modal) */}
+      {/* การ์ดสรุปผล (modal) */}
       {showRecap && recapData && <RecapShareModal data={recapData} onClose={() => setShowRecap(false)} />}
+      {/* สแกน QR ระหว่างวิ่ง (modal) */}
       {scanning && <ScanOverlay modal onClose={() => setScanning(false)} />}
     </main>
   );
