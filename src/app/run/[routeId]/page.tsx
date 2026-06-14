@@ -3,9 +3,12 @@
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { RouteDef, RunMode } from "@/types";
 import { basicRouteById } from "@/data/routes";
 import { repo } from "@/lib/storage";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
+import { useUser } from "@/lib/useUser";
 import { useRunStore } from "@/store/runStore";
 import { densify, metersToKm, pathLengthM } from "@/lib/geo";
 import { snapToRoads } from "@/lib/snapToRoads";
@@ -57,6 +60,18 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
   const [mode, setMode] = useState<RunMode>("sim");
   const s = useRunStore();
   const savedRef = useRef(false);
+  const router = useRouter();
+  const { user } = useUser();
+
+  // เริ่มวิ่ง — ถ้าต่อ Supabase แล้วต้อง login ก่อน (เพื่อบันทึกผลต่อ user)
+  const onStart = () => {
+    if (!route) return;
+    if (isSupabaseConfigured && !user) {
+      router.push(`/login?next=${encodeURIComponent(`/run/${routeId}`)}`);
+      return;
+    }
+    useRunStore.getState().begin(route, mode);
+  };
 
   useWakeLock(s.status === "running" && mode === "gps");
 
@@ -103,17 +118,19 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
   useEffect(() => {
     if (s.status !== "finished" || !route || savedRef.current) return;
     savedRef.current = true;
-    repo.addRun({
-      id: `run-${Date.now()}`,
-      routeName: route.name,
-      dateISO: new Date().toISOString(),
-      km: +(s.distanceM / 1000).toFixed(2),
-      elapsedMs: s.elapsedMs,
-      calories: s.calories,
-      steps: steps(s.distanceM),
-      points: s.points,
-      checkins: s.checkedIn.length,
-    });
+    repo
+      .addRun({
+        id: `run-${Date.now()}`,
+        routeName: route.name,
+        dateISO: new Date().toISOString(),
+        km: +(s.distanceM / 1000).toFixed(2),
+        elapsedMs: s.elapsedMs,
+        calories: s.calories,
+        steps: steps(s.distanceM),
+        points: s.points,
+        checkins: s.checkedIn.length,
+      })
+      .catch((e) => console.error("บันทึกการวิ่งไม่สำเร็จ:", e));
   }, [s.status, route, s.distanceM, s.elapsedMs, s.points, s.calories, s.checkedIn.length]);
 
   // รีเซ็ตเมื่อออกจากหน้า
@@ -205,7 +222,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
               <option value="gps">GPS จริง</option>
             </select>
             <button
-              onClick={() => useRunStore.getState().begin(route, mode)}
+              onClick={onStart}
               className="flex-1 rounded-xl bg-gradient-to-br from-accent to-accent2 p-3.5 font-bold tracking-wide text-card active:scale-95"
             >
               ▶ เริ่มวิ่ง

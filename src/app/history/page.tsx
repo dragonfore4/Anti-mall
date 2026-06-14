@@ -8,7 +8,9 @@ import { fmtTime } from "@/lib/stats";
 
 export default function HistoryPage() {
   const [runs, setRuns] = useState<RunRecord[]>([]);
-  useEffect(() => setRuns(repo.getRuns()), []);
+  useEffect(() => {
+    repo.getRuns().then(setRuns);
+  }, []);
 
   return (
     <main className="min-h-[100dvh] px-6 pb-12 pt-6">

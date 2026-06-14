@@ -7,7 +7,9 @@ import { COLLECTIBLES } from "@/data/rewards";
 
 export default function RewardsPage() {
   const [points, setPoints] = useState(0);
-  useEffect(() => setPoints(repo.totalPoints()), []);
+  useEffect(() => {
+    repo.totalPoints().then(setPoints);
+  }, []);
 
   const unlocked = COLLECTIBLES.filter((c) => points >= c.needPoints);
   const next = COLLECTIBLES.find((c) => points < c.needPoints);
