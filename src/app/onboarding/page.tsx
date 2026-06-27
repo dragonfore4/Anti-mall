@@ -67,7 +67,7 @@ function OnboardingInner() {
   }
 
   return (
-    <main className="flex min-h-[100dvh] flex-col justify-center px-7">
+    <main className="mx-auto flex min-h-[100dvh] w-full max-w-app flex-col justify-center px-7 py-10">
       <div className="kicker text-[11px] text-accent2">ยินดีต้อนรับ</div>
       <h1 className="mt-3 font-display text-3xl leading-tight">ตั้งค่าโปรไฟล์</h1>
       <p className="mt-2 text-sm text-muted">กรอกข้อมูลเพื่อเริ่มสะสมแต้มและเหรียญสถานที่</p>
@@ -106,7 +106,7 @@ function OnboardingInner() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-2xl bg-gradient-to-br from-accent to-accent2 p-3.5 font-bold text-card active:scale-[0.98] disabled:opacity-60"
+          className="w-full rounded-2xl bg-accent p-3.5 font-bold text-cream active:scale-[0.98] disabled:opacity-60"
         >
           {busy ? "กำลังบันทึก…" : "เริ่มใช้งาน →"}
         </button>

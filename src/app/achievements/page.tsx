@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CHECKPOINTS } from "@/data/checkpoints";
 import { repo } from "@/lib/storage";
+import Sunburst from "@/components/Sunburst";
 
 export default function AchievementsPage() {
   const [unlocked, setUnlocked] = useState<string[]>([]);
@@ -15,7 +16,7 @@ export default function AchievementsPage() {
   const total = CHECKPOINTS.length;
 
   return (
-    <main className="min-h-[100dvh] px-6 pb-12 pt-6">
+    <main className="mx-auto min-h-[100dvh] max-w-3xl px-6 pb-12 pt-6">
       <header className="flex items-center gap-3 pb-4">
         <Link href="/" className="text-xl text-muted active:scale-90">
           ←
@@ -31,18 +32,20 @@ export default function AchievementsPage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-3">
+      <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
         {CHECKPOINTS.map((c) => {
           const got = unlocked.includes(c.id);
           return (
             <div
               key={c.id}
-              className={`rounded-xl border p-3 text-center ${
-                got ? "border-accent bg-accent/10" : "border-line bg-card2 opacity-60"
+              className={`flex flex-col items-center gap-1.5 rounded-2xl border p-3 text-center ${
+                got ? "border-accent bg-accent/10" : "border-line bg-card2/50 opacity-60"
               }`}
             >
-              <div className="text-3xl">{got ? c.emoji : "🔒"}</div>
-              <div className="mt-1 font-display text-[11.5px] leading-tight">{c.name}</div>
+              <Sunburst size={48} fill={got ? "var(--color-cream)" : "var(--color-chip)"}>
+                {got ? c.emoji : "🔒"}
+              </Sunburst>
+              <div className="font-display text-[11.5px] font-semibold leading-tight">{c.name}</div>
               <div className="text-[10px] text-muted">{got ? "ปลดล็อกแล้ว" : "ยังไม่สแกน"}</div>
             </div>
           );
@@ -51,7 +54,7 @@ export default function AchievementsPage() {
 
       <Link
         href="/scan"
-        className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-accent to-accent2 p-3.5 font-bold text-card active:scale-[0.98]"
+        className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-accent p-3.5 font-bold text-cream active:scale-[0.98]"
       >
         📷 สแกน QR รับเหรียญ
       </Link>

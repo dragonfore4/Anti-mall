@@ -1,25 +1,30 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* ===== ธีม "กระดาษสา" — นิตยสารมรดกรัตนโกสินทร์ (Tailwind v4 CSS-first) ===== */
+/* ===== ธีม "YOUNG vibes" — ม่วงเข้ม + เหลือง + ส้ม (Tailwind v4 CSS-first) ===== */
 @theme {
-  /* พื้น/กระดาษ */
-  --color-bg: #f0e6d2; /* กระดาษสาครีม */
-  --color-card: #f8f1e1; /* การ์ด/แผ่นยกขึ้น (อ่อนกว่าพื้น) */
-  --color-card2: #e9dcc1; /* แผงเข้มขึ้น */
-  --color-line: #d6c4a0; /* เส้นไม้บรรทัดบนกระดาษ */
+  /* พื้น/แผง (โทนม่วง) */
+  --color-bg: #3b1a4e; /* ม่วงเข้ม (Obsidian Purple) */
+  --color-card: #4a2a60; /* แผงม่วงยกขึ้น */
+  --color-card2: #5b3a72; /* แผงม่วงอ่อนกว่า (select/ปุ่มรอง) */
+  --color-line: #6b4d82; /* เส้นขอบม่วงลาเวนเดอร์ */
 
-  /* หมึก/ข้อความ */
-  --color-ink: #211a12; /* หมึกดำรัก */
-  --color-muted: #7a6a55; /* น้ำตาลมุทรอง */
+  /* หมึก/ข้อความ (สว่างบนม่วง) */
+  --color-ink: #fdf7ea; /* ขาวนวล */
+  --color-muted: #b6a9cf; /* ลาเวนเดอร์เทา (ข้อความรอง) */
 
-  /* สี accent มรดก */
-  --color-accent: #b23a2e; /* ชาดแดง (สีวัด) */
-  --color-accent2: #b58a2e; /* ทองอ่อน */
-  --color-good: #4f6b46; /* เขียวมอส (เช็คอินแล้ว) */
+  /* สี accent */
+  --color-accent: #f44e03; /* ส้มสด (ปุ่มหลัก/ริบบิ้น) */
+  --color-accent2: #ffe956; /* เหลืองสด (Sunkissed Yellow) */
+  --color-good: #7bd88f; /* เขียวมิ้นต์ (เช็คอินแล้ว) */
+
+  /* สีการ์ด/ชิป */
+  --color-cream: #fdfbbb; /* เหลืองนวล (sunburst/การ์ดสว่าง) */
+  --color-chip: #c4b5d3; /* ลาเวนเดอร์ (ชิป) */
 
   /* ฟอนต์ (ผูกกับ next/font ใน layout) */
-  --font-display: var(--font-chonburi), "Noto Serif Thai", serif;
+  --font-brand: var(--font-fredoka), var(--font-kanit), sans-serif;
+  --font-display: var(--font-kanit), "Noto Sans Thai", sans-serif;
   --font-sans: var(--font-sarabun), -apple-system, "Noto Sans Thai", system-ui,
     sans-serif;
 
@@ -27,7 +32,7 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html,
@@ -40,41 +45,56 @@ body {
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
-  /* พื้นกระดาษ + grain จาง ๆ + แสงนวลมุมบน */
-  background-color: #f0e6d2;
+  /* พื้นม่วง + แสงนวลมุมบน + ไอส้มจาง ๆ มุมล่าง */
+  background-color: #3b1a4e;
   background-image:
-    radial-gradient(120% 80% at 50% -10%, rgba(255, 251, 240, 0.7), transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    radial-gradient(120% 80% at 50% -10%, rgba(132, 99, 171, 0.5), transparent 60%),
+    radial-gradient(90% 60% at 100% 105%, rgba(244, 78, 3, 0.08), transparent 55%);
   background-attachment: fixed, fixed;
 }
 
 ::selection {
   background: var(--color-accent);
-  color: #f8f1e1;
+  color: var(--color-cream);
 }
 
 /* ===== ลูกเล่น/decorative ใช้ซ้ำได้ ===== */
 
-/* เลขมาตราแบบนิตยสาร (วงกลมชาดแดง) */
+/* เลขมาตรา/คำนำแบบนิตยสาร */
 .kicker {
   font-family: var(--font-display);
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
-/* เส้นคู่ใต้หัวข้อ (ไม้บรรทัดนิตยสาร) */
+/* เส้นคู่ใต้หัวข้อ (เหลือง + ลาเวนเดอร์) */
 .rule-double {
-  border-top: 2px solid var(--color-ink);
+  border-top: 2px solid var(--color-accent2);
   box-shadow: 0 3px 0 -1px var(--color-line);
 }
 
-/* กรอบ/การ์ดกระดาษ มีเงานุ่ม + เส้นหมึก */
+/* การ์ดแผงม่วง (เงานุ่ม + ขอบลาเวนเดอร์) */
 .card-paper {
   background: var(--color-card);
   border: 1px solid var(--color-line);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 10px 24px -16px rgba(33, 26, 18, 0.5);
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 14px 30px -18px rgba(0, 0, 0, 0.7);
+}
+
+/* การ์ดสว่าง (เหลืองนวล หมึกม่วง) */
+.card-cream {
+  background: var(--color-cream);
+  color: #3b1a4e;
+  border: 1px solid rgba(59, 26, 78, 0.15);
+  box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.6);
+}
+
+/* ชิปลาเวนเดอร์ (pill) */
+.chip {
+  background: var(--color-chip);
+  color: #3b1a4e;
+  border: 1px solid rgba(59, 26, 78, 0.12);
 }
 
 /* ลายขีดเฉียง (decorative fill) */
@@ -92,22 +112,22 @@ body {
   height: 7px;
   border-radius: 50%;
   background: var(--color-accent);
-  box-shadow: 0 0 0 0 rgba(178, 58, 46, 0.5);
+  box-shadow: 0 0 0 0 rgba(244, 78, 3, 0.5);
   animation: blip 1.6s infinite;
 }
 @keyframes blip {
   0% {
-    box-shadow: 0 0 0 0 rgba(178, 58, 46, 0.5);
+    box-shadow: 0 0 0 0 rgba(244, 78, 3, 0.5);
   }
   70% {
-    box-shadow: 0 0 0 7px rgba(178, 58, 46, 0);
+    box-shadow: 0 0 0 7px rgba(244, 78, 3, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(178, 58, 46, 0);
+    box-shadow: 0 0 0 0 rgba(244, 78, 3, 0);
   }
 }
 
-/* หมุดตำแหน่งปัจจุบัน (pulse) */
+/* หมุดตำแหน่งปัจจุบัน (pulse) — ฟ้าเพื่ออ่านง่ายบนแผนที่ */
 .pulse {
   width: 16px;
   height: 16px;
@@ -144,7 +164,7 @@ body {
   animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-/* popup ของ Leaflet ให้เข้าธีมกระดาษ */
+/* popup ของ Leaflet ให้เข้าธีมม่วง */
 .leaflet-popup-content-wrapper {
   background: var(--color-card);
   color: var(--color-ink);
@@ -160,6 +180,6 @@ body {
   line-height: 1.5;
 }
 .leaflet-container {
-  background: #e9dcc1;
+  background: #2c1338;
   font-family: inherit;
 }

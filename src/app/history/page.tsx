@@ -13,7 +13,7 @@ export default function HistoryPage() {
   }, []);
 
   return (
-    <main className="min-h-[100dvh] px-6 pb-12 pt-6">
+    <main className="mx-auto min-h-[100dvh] max-w-3xl px-6 pb-12 pt-6">
       <div className="flex items-center justify-between text-[11px]">
         <Link href="/" className="font-display text-accent active:opacity-60">
           ← กลับ
@@ -21,7 +21,9 @@ export default function HistoryPage() {
         <span className="kicker text-accent2">๐๔</span>
       </div>
 
-      <h1 className="mt-5 font-display text-[30px] leading-tight">ประวัติการวิ่ง</h1>
+      <h1 className="mt-5 font-display text-[30px] font-semibold leading-tight text-accent2">
+        ประวัติการวิ่ง
+      </h1>
       <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
         บันทึกทุกครั้งที่ออกวิ่ง — ระยะ เวลา แคลอรี่ และแต้มที่ได้
       </p>
@@ -29,17 +31,17 @@ export default function HistoryPage() {
 
       {runs.length === 0 ? (
         <div className="mt-24 text-center text-muted">
-          <div className="font-display text-5xl text-line">ว่าง</div>
+          <div className="font-display text-5xl text-accent2">ว่าง</div>
           <div className="mt-3 text-[13px]">ยังไม่มีประวัติ — ออกไปวิ่งกันเลย</div>
           <Link
             href="/routes"
-            className="mt-5 inline-block rounded-xl bg-gradient-to-br from-accent to-accent2 px-5 py-2.5 font-bold text-card active:scale-95"
+            className="mt-5 inline-block rounded-xl bg-accent px-5 py-2.5 font-bold text-cream active:scale-95"
           >
             เลือกเส้นทาง →
           </Link>
         </div>
       ) : (
-        <div className="mt-5 space-y-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {runs.map((r, i) => (
             <div
               key={r.id}

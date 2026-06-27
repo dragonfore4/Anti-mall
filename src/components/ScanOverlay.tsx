@@ -103,7 +103,9 @@ export default function ScanOverlay({
 
       <div
         className={
-          modal ? "flex flex-col px-6 py-6" : "flex flex-1 flex-col justify-center px-6 pb-8"
+          modal
+            ? "flex flex-col px-6 py-6"
+            : "mx-auto flex w-full max-w-md flex-1 flex-col justify-center overflow-y-auto px-6 pb-8"
         }
       >
         {!result ? (
@@ -174,7 +176,7 @@ export default function ScanOverlay({
               </button>
               <Link
                 href="/achievements"
-                className="rounded-2xl bg-gradient-to-br from-accent to-accent2 px-5 py-3 text-sm font-bold text-card active:scale-95"
+                className="rounded-2xl bg-accent px-5 py-3 text-sm font-bold text-cream active:scale-95"
               >
                 ดูเหรียญทั้งหมด
               </Link>
@@ -192,7 +194,7 @@ export default function ScanOverlay({
         onClick={onClose}
       >
         <div
-          className="w-full max-w-app overflow-hidden rounded-2xl border border-line bg-bg"
+          className="max-h-[90dvh] w-full max-w-app overflow-y-auto rounded-2xl border border-line bg-bg"
           onClick={(e) => e.stopPropagation()}
         >
           {inner}
