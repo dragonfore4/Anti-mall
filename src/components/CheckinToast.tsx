@@ -20,7 +20,7 @@ export default function CheckinToast({ data, onClose }: Props) {
 
   return (
     <div
-      className={`absolute left-4 right-4 top-[150px] z-[800] rounded-2xl border border-accent bg-card p-4 shadow-2xl transition-all duration-300 ${
+      className={`absolute left-4 right-4 top-[150px] z-[800] rounded-2xl border border-accent bg-card p-4 shadow-2xl transition-all duration-300 landscape:right-auto landscape:top-4 landscape:max-w-md ${
         data
           ? "pointer-events-auto translate-y-0 opacity-100"
           : "pointer-events-none -translate-y-5 opacity-0"

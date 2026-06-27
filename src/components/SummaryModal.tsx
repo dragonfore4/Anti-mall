@@ -21,16 +21,16 @@ export default function SummaryModal({ km, time, cal, steps, points, checkins, o
   ];
   return (
     <div className="absolute inset-0 z-[900] flex items-center justify-center bg-ink/70 p-5 backdrop-blur-sm">
-      <div className="card-paper rise w-full rounded-2xl p-6 text-center">
+      <div className="card-paper rise max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-2xl p-6 text-center">
         <div className="kicker text-[11px] text-accent2">เส้นชัย · ๒๕๖๙</div>
         <h2 className="mt-2 font-display text-2xl leading-tight">วิ่งครบเส้นทางแล้ว</h2>
         <div className="rule-double mx-auto mt-3 w-14" />
 
         <div className="my-5 grid grid-cols-2 gap-2.5">
           {grid.map((g) => (
-            <div key={g.l} className="rounded-xl border border-line bg-card2 p-3.5">
-              <div className="font-display text-2xl text-ink">{g.v}</div>
-              <div className="mt-0.5 text-[11px] tracking-wide text-muted">{g.l}</div>
+            <div key={g.l} className="rounded-xl border border-bg/10 bg-cream p-3.5">
+              <div className="font-display text-2xl font-semibold text-bg">{g.v}</div>
+              <div className="mt-0.5 text-[11px] tracking-wide text-bg/60">{g.l}</div>
             </div>
           ))}
         </div>
@@ -43,7 +43,7 @@ export default function SummaryModal({ km, time, cal, steps, points, checkins, o
         <div className="flex gap-2.5">
           <button
             onClick={onShare}
-            className="flex-1 rounded-xl bg-gradient-to-br from-accent to-accent2 p-3.5 font-bold tracking-wide text-card active:scale-95"
+            className="flex-1 rounded-xl bg-accent p-3.5 font-bold tracking-wide text-cream active:scale-95"
           >
             แชร์ลง Story
           </button>

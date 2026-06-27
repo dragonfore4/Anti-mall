@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ออกแบบเส้นทางเอง (Advance) ทำงานยังไง — วิ่งรอบเกาะรัตนโกสินทร์</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Sarabun:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #3b1a4e; /* ม่วงเข้ม */
+        --paper: #4a2a60; /* แผงม่วงยกขึ้น */
+        --paper2: #5b3a72; /* แผงม่วงอ่อน */
+        --ink: #fdf7ea; /* ขาวนวล */
+        --muted: #b6a9cf; /* ลาเวนเดอร์เทา */
+        --line: #6b4d82; /* เส้นขอบ */
+        --accent: #f44e03; /* ส้มสด (CTA/ริบบิ้น) */
+        --accent2: #ffe956; /* เหลืองสด */
+        --cream: #fdfbbb; /* เหลืองนวล */
+        --chip: #c4b5d3; /* ลาเวนเดอร์ชิป */
+        --good: #7bd88f; /* เขียวมิ้นต์ */
+        --code-bg: #2a1338;
+        --code-fg: #fdf7ea;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Sarabun", system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.75;
+        background-image: radial-gradient(circle at 1px 1px, rgba(255, 233, 86, 0.05) 1px, transparent 0);
+        background-size: 22px 22px;
+      }
+      .wrap {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 40px 22px 90px;
+      }
+      header.masthead {
+        border-bottom: 3px double var(--accent2);
+        padding-bottom: 18px;
+        margin-bottom: 8px;
+      }
+      .kicker {
+        font-size: 12px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--accent2);
+        font-family: "Fredoka", "Kanit", sans-serif;
+      }
+      h1 {
+        font-family: "Kanit", serif;
+        font-weight: 600;
+        font-size: 38px;
+        line-height: 1.15;
+        margin: 10px 0 6px;
+        color: var(--accent2);
+      }
+      .subtitle { color: var(--muted); margin: 0; }
+      h2 {
+        font-family: "Kanit", serif;
+        font-weight: 600;
+        font-size: 25px;
+        margin: 46px 0 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        color: var(--accent2);
+      }
+      h3 {
+        font-family: "Kanit", serif;
+        font-weight: 500;
+        font-size: 18px;
+        margin: 26px 0 6px;
+        color: var(--ink);
+      }
+      h3 .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.7em;
+        height: 1.7em;
+        margin-right: 0.5em;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--cream);
+        font-size: 14px;
+      }
+      a { color: var(--accent2); }
+      strong { color: var(--ink); }
+      code {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 0.85em;
+        background: rgba(255, 233, 86, 0.12);
+        color: var(--accent2);
+        padding: 1px 6px;
+        border-radius: 5px;
+      }
+      pre {
+        background: var(--code-bg);
+        color: var(--code-fg);
+        padding: 16px 18px;
+        border-radius: 12px;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.6;
+        border: 1px solid #1a0c24;
+      }
+      pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0;
+        font-size: 14.5px;
+      }
+      th, td {
+        text-align: left;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        font-family: "Kanit", serif;
+        font-weight: 500;
+        color: var(--accent2);
+        border-bottom: 2px solid var(--accent2);
+      }
+      .toc {
+        background: rgba(255, 233, 86, 0.06);
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--accent2);
+        border-radius: 10px;
+        padding: 14px 20px;
+        margin: 24px 0;
+      }
+      .toc ol { margin: 6px 0 0; padding-left: 22px; }
+      .toc li { margin: 2px 0; }
+      .note {
+        background: rgba(244, 78, 3, 0.1);
+        border-left: 4px solid var(--accent);
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin: 16px 0;
+        font-size: 14.5px;
+      }
+      .tip {
+        background: rgba(123, 216, 143, 0.1);
+        border-left: 4px solid var(--good);
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin: 16px 0;
+        font-size: 14.5px;
+      }
+      .flow {
+        font-family: ui-monospace, monospace;
+        white-space: pre;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--accent2);
+      }
+      .file {
+        font-family: ui-monospace, monospace;
+        font-size: 0.85em;
+        color: var(--chip);
+      }
+      footer {
+        margin-top: 60px;
+        padding-top: 16px;
+        border-top: 3px double var(--accent2);
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="masthead">
+        <div class="kicker">เจาะลึกฟีเจอร์ · ฉบับ young vibes</div>
+        <h1>ออกแบบเส้นทางเอง (Advance)</h1>
+        <p class="subtitle">
+          ผู้ใช้เลือก <strong>ย่าน + มรดก + บรรยากาศ</strong> แล้วระบบร้อยหมุดเป็นเส้นทางวิ่งสด ๆ —
+          เอกสารนี้อธิบายว่ามัน <strong>ทำงานยังไงตั้งแต่กดปุ่มจนถึงหน้าวิ่ง</strong>
+        </p>
+      </header>
+
+      <div class="toc">
+        <strong>ในเอกสารนี้</strong>
+        <ol>
+          <li><a href="#overview">ภาพรวม flow</a></li>
+          <li><a href="#step1">๑ หน้า /build — เลือกตัวเลือก</a></li>
+          <li><a href="#step2">๒ generateAdvanceRoute — ปั้นเส้นทาง</a></li>
+          <li><a href="#step3">๓ saveDraftRoute — ส่งต่อให้หน้าวิ่ง</a></li>
+          <li><a href="#step4">๔ หน้า /run — หยิบ draft + เกาะถนน</a></li>
+          <li><a href="#vs">Basic vs Advance ต่างกันยังไง</a></li>
+          <li><a href="#gotchas">⚠️ ข้อควรระวัง</a></li>
+        </ol>
+      </div>
+
+      <h2 id="overview">ภาพรวม flow</h2>
+      <p>
+        เส้นทางแบบ Advance ไม่ได้เขียนไว้ล่วงหน้าใน <span class="file">data/routes.ts</span>
+        เหมือนเส้นทาง Basic — แต่ <strong>สร้างสด ๆ จากตัวเลือกของผู้ใช้</strong> แล้วฝากไว้ใน
+        localStorage เพื่อส่งต่อไปหน้าวิ่ง
+      </p>
+      <pre class="flow">/build                generateAdvanceRoute()         /run/&lt;id&gt;
+เลือก ย่าน/มรดก/  ──▶  • คัดหมุดตามตัวเลือก      ──▶  • หา Basic ก่อน
+บรรยากาศ              • เรียงด้วย nearest-neighbour    ไม่เจอ → getDraftRoute()
+   │                  • คิดระยะ + แคลอรี่/ช่วง         • snapToRoads (ORS เกาะถนน)
+   │                  • คืน RouteDef (kind:"advance")  • zustand store ติดตาม GPS
+   ▼                         │
+ปุ่ม "สร้างเส้นทาง · N จุด"   ▼
+                      repo.saveDraftRoute(route)  ← เก็บ localStorage "rk.drafts"</pre>
+
+      <h2 id="step1">๑ หน้า /build — เลือกตัวเลือก</h2>
+      <p>ไฟล์ <span class="file">src/app/build/page.tsx</span> เก็บ state ในเครื่อง 3 อย่าง:</p>
+      <table>
+        <thead>
+          <tr><th>ตัวเลือก</th><th>ชนิด</th><th>หมายเหตุ</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>ย่าน</strong> (districts)</td><td>เลือกได้หลายอัน</td><td>มาจาก <code>ALL_DISTRICTS</code></td></tr>
+          <tr><td><strong>มรดก</strong> (heritage)</td><td>เลือกได้หลายอัน</td><td>ว่าง = เอาทั้งหมดในย่าน</td></tr>
+          <tr><td><strong>บรรยากาศ</strong> (atmosphere)</td><td>เลือกได้อันเดียว</td><td>ดีฟอลต์ = <code>ATMOSPHERES[1]</code></td></tr>
+        </tbody>
+      </table>
+      <p>
+        มีตัวพรีวิว <code>matchCount</code> ที่คำนวณ "จะได้กี่จุด" ใหม่ทุกครั้งที่เปลี่ยนตัวเลือก
+        เพื่อโชว์บนปุ่ม <code>สร้างเส้นทาง · N จุด</code> · ปุ่มจะกดไม่ได้จนกว่าจะเลือกย่านอย่างน้อย 1 ย่าน
+      </p>
+      <div class="note">
+        <strong>โลจิกคัดจุดถูกเขียนไว้ 2 ที่</strong> — ตัวพรีวิว <code>matchCount</code> ในหน้านี้
+        กับ <code>pickCheckpoints</code> ในตัว generator ใช้กฎเดียวกัน (รวมถึงกฎ "เหลือ &lt; 2 ให้คงทั้งย่าน")
+        ถ้าแก้กฎ <strong>ต้องแก้ทั้งสองที่</strong> ไม่งั้นเลขพรีวิวกับผลจริงจะไม่ตรงกัน
+      </div>
+
+      <h2 id="step2">๒ generateAdvanceRoute — ปั้นเส้นทาง</h2>
+      <p>
+        เมื่อกดปุ่ม จะเรียก <code>generateAdvanceRoute(...)</code> ใน
+        <span class="file">src/lib/routeGen.ts</span> ทำ 3 ขั้น:
+      </p>
+
+      <h3><span class="num">ก</span>คัดหมุด — <code>pickCheckpoints</code></h3>
+      <ul>
+        <li>กรอง <code>CHECKPOINTS</code> เอาเฉพาะหมุดในย่านที่เลือก</li>
+        <li>ถ้ามีเลือกมรดก → กรองด้วยมรดกนั้น <strong>แต่จะใช้ก็ต่อเมื่อเหลือ ≥ 2 จุด</strong>
+            ไม่งั้น fallback กลับไปใช้หมุดทั้งหมดในย่าน (กันเส้นทางสั้นเกิน)</li>
+      </ul>
+
+      <h3><span class="num">ข</span>เรียงลำดับ — <code>orderByNearestNeighbour</code></h3>
+      <ul>
+        <li>เริ่มจากหมุด <strong>เหนือสุด</strong> (latitude มากสุด)</li>
+        <li>ไล่หยิบหมุดที่ <strong>ใกล้จุดล่าสุดที่สุด</strong> (ระยะ Haversine) ไปเรื่อย ๆ
+            → ได้เส้นต่อเนื่อง ไม่กระโดดไปมา</li>
+      </ul>
+
+      <h3><span class="num">ค</span>สร้าง <code>RouteDef</code></h3>
+      <pre><code>{
+  id: `advance-${Date.now()}`,   // id ไม่ซ้ำ ติด timestamp
+  name: "เส้นทางของฉัน (Advance)",
+  atmosphere,                     // บรรยากาศที่เลือก (เป็น metadata)
+  distanceKm,                     // จาก pathLengthM(path)
+  legCalories: legCaloriesFromPath(path),  // แคลต่อช่วง คิดจากระยะ
+  kind: "advance",
+  checkpointIds: [...],
+  path,                           // เส้นตรงเชื่อมหมุด (placeholder)
+}</code></pre>
+      <div class="note">
+        คืน <strong><code>null</code> ถ้าได้หมุดน้อยกว่า 2 จุด</strong> → หน้า /build โชว์ข้อความ
+        "เลือกย่านให้ได้อย่างน้อย 2 จุดเช็คอินก่อนนะครับ"
+      </div>
+      <div class="tip">
+        <strong>แคลอรี่:</strong> เส้นทาง Advance สร้างสดจึงกรอกแคลเองไม่ได้ →
+        ใช้ <code>legCaloriesFromPath</code> คิดแคล "ต่อช่วง" จากระยะให้อัตโนมัติ
+        (ต่างจาก Basic ที่กรอก <code>legCalories</code> มือได้)
+      </div>
+
+      <h2 id="step3">๓ saveDraftRoute — ส่งต่อให้หน้าวิ่ง</h2>
+      <p>
+        เส้นทางที่เพิ่งสร้าง <strong>ไม่มีอยู่ใน routes.ts</strong> เลยหาด้วย id ปกติไม่ได้ จึง:
+      </p>
+      <ul>
+        <li><code>repo.saveDraftRoute(route)</code> เก็บลง localStorage คีย์ <code>rk.drafts</code>
+            เป็น map <code>{ id: RouteDef }</code></li>
+        <li>เป็น <strong>local แบบ sync ที่ทั้งสอง repo (Local/Supabase) ใช้ร่วมกัน</strong> —
+            draft เป็นข้อมูลเฉพาะเครื่อง <strong>ไม่ sync ขึ้น cloud</strong> เพราะเป็นแค่ตัวส่งต่อ build→run</li>
+        <li>แล้ว <code>router.push(/run/&lt;route.id&gt;)</code></li>
+      </ul>
+
+      <h2 id="step4">๔ หน้า /run — หยิบ draft + เกาะถนน</h2>
+      <p>ไฟล์ <span class="file">src/app/run/[routeId]/page.tsx</span> resolve เส้นทางแบบนี้:</p>
+      <pre><code>// หา Basic ก่อน ไม่เจอค่อยดู draft (Advance) ใน localStorage
+const base = basicRouteById(routeId) ?? repo.getDraftRoute(routeId);</code></pre>
+      <p>
+        id ที่ขึ้นต้นด้วย <code>advance-</code> จะไม่เจอใน Basic → ดึง draft กลับมาจาก localStorage
+        จากตรงนี้เส้นทาง custom ทำงานเหมือนเส้นทางสำเร็จรูปทุกอย่าง: <code>path</code> เส้นตรง
+        จะถูก <strong>"ดัด" ให้เกาะถนนจริงผ่าน ORS</strong> (<code>snapToRoads</code> → <code>/api/route</code>)
+        แล้ว zustand store จัดการ GPS/sim + เช็คอินตามเดิม
+      </p>
+
+      <h2 id="vs">Basic vs Advance ต่างกันยังไง</h2>
+      <table>
+        <thead>
+          <tr><th>ประเด็น</th><th>Basic</th><th>Advance (custom)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>นิยามที่ไหน</td><td><span class="file">data/routes.ts</span> (เขียนไว้ล่วงหน้า)</td><td>สร้างสดตอนกดปุ่ม</td></tr>
+          <tr><td>id</td><td>คงที่</td><td><code>advance-&lt;timestamp&gt;</code></td></tr>
+          <tr><td>เก็บที่ไหน</td><td>ในโค้ด</td><td>localStorage <code>rk.drafts</code></td></tr>
+          <tr><td>แคลอรี่</td><td>กรอกมือได้</td><td>คิดจากระยะอัตโนมัติ</td></tr>
+          <tr><td>ลำดับหมุด</td><td>กำหนดเอง</td><td>nearest-neighbour</td></tr>
+          <tr><td>เกาะถนน (ORS)</td><td colspan="2" style="text-align:center;">เหมือนกันทั้งคู่</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="gotchas">⚠️ ข้อควรระวัง</h2>
+      <ul>
+        <li><strong>กฎคัดจุดอยู่ 2 ที่</strong> (พรีวิว + generator) — แก้ต้องแก้พร้อมกัน</li>
+        <li><strong>draft เป็น local-only และผูกกับ id</strong> — เส้นทาง custom อยู่แค่ในเครื่องที่สร้าง
+            รีเฟรช <code>/run/advance-123...</code> ได้เพราะ draft ยังอยู่ใน localStorage
+            แต่เปิดในอีกเครื่อง <strong>จะหาไม่เจอ</strong></li>
+        <li><strong>บรรยากาศ (atmosphere) เป็นแค่ metadata</strong> — ไม่มีผลต่อการคัดหมุดหรือการ routing
+            เก็บติดไปกับเส้นทางเพื่อแสดงผลเท่านั้น</li>
+      </ul>
+
+      <footer>วิ่งรอบเกาะรัตนโกสินทร์ · young vibes</footer>
+    </div>
+  </body>
+</html>

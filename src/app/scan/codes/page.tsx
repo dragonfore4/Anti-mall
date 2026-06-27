@@ -20,7 +20,7 @@ export default function ScanCodesPage() {
   }, []);
 
   return (
-    <main className="min-h-[100dvh] px-6 pb-12 pt-6">
+    <main className="mx-auto min-h-[100dvh] max-w-3xl px-6 pb-12 pt-6">
       <header className="flex items-center gap-3 pb-2">
         <Link href="/scan" className="text-xl text-muted active:scale-90">
           ←
@@ -31,7 +31,7 @@ export default function ScanCodesPage() {
         เปิดหน้านี้บนอีกเครื่อง/อีกแท็บ แล้วใช้หน้า <code>/scan</code> ส่องเพื่อทดสอบปลดล็อกเหรียญ
       </p>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {CHECKPOINTS.map((c) => (
           <div key={c.id} className="rounded-xl border border-line bg-white p-3 text-center">
             {imgs[c.id] ? (
@@ -40,7 +40,7 @@ export default function ScanCodesPage() {
             ) : (
               <div className="aspect-square animate-pulse rounded bg-card2" />
             )}
-            <div className="mt-2 font-display text-[12px] leading-tight text-ink">
+            <div className="mt-2 font-display text-[12px] leading-tight text-bg">
               {c.emoji} {c.name}
             </div>
           </div>

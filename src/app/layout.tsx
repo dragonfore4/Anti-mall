@@ -1,12 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Chonburi, Sarabun } from "next/font/google";
+import { Kanit, Sarabun, Fredoka } from "next/font/google";
 import "./globals.css";
 
-// ฟอนต์ display ไทยมีคาแรกเตอร์ (หัวข้อใหญ่) + body อ่านง่าย
-const display = Chonburi({
+// ฟอนต์ display ไทยทรงเรขาคณิต หนา เล่นสนุก (หัวข้อใหญ่) + body อ่านง่าย
+const display = Kanit({
   subsets: ["thai", "latin"],
-  weight: "400",
-  variable: "--font-chonburi",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-kanit",
+  display: "swap",
+});
+// ฟอนต์โลโก้ "young vibes" — ตัวกลม หนา (latin)
+const brand = Fredoka({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-fredoka",
   display: "swap",
 });
 const sans = Sarabun({
@@ -47,7 +54,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f0e6d2",
+  themeColor: "#3b1a4e",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -60,9 +67,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="th" className={`${display.variable} ${sans.variable}`}>
+    <html lang="th" className={`${display.variable} ${sans.variable} ${brand.variable}`}>
       <body className="font-sans">
-        <div className="relative z-10 mx-auto min-h-[100dvh] max-w-app">{children}</div>
+        <div className="relative z-10 min-h-[100dvh]">{children}</div>
       </body>
     </html>
   );

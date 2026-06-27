@@ -49,7 +49,7 @@ function LoginInner() {
   };
 
   return (
-    <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-8 px-8 text-center">
+    <main className="mx-auto flex min-h-[100dvh] w-full max-w-app flex-col items-center justify-center gap-8 px-8 py-10 text-center landscape:gap-5">
       <div className="rise">
         <div className="text-5xl">⭐</div>
         <div className="kicker mt-4 text-[11px] text-accent2">รัตนโกสินทร์</div>

@@ -154,7 +154,7 @@ export default function RecapShareModal({ data, onClose }: Props) {
             <button
               onClick={onShare}
               disabled={!ready}
-              className="flex-1 rounded-xl bg-gradient-to-br from-accent to-accent2 p-3.5 font-bold text-card active:scale-95 disabled:opacity-50"
+              className="flex-1 rounded-xl bg-accent p-3.5 font-bold text-cream active:scale-95 disabled:opacity-50"
             >
               แชร์
             </button>

@@ -4,19 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-
-/** อายุจากวันเกิด (ปีเต็ม) */
-function ageFromDob(dob: string): number | null {
-  if (!dob) return null;
-  const [y, m, d] = dob.split("-").map(Number);
-  if (!y || !m || !d) return null;
-  const today = new Date();
-  let age = today.getFullYear() - y;
-  const beforeBirthday =
-    today.getMonth() + 1 < m || (today.getMonth() + 1 === m && today.getDate() < d);
-  if (beforeBirthday) age -= 1;
-  return age;
-}
+import { ageFromDob } from "@/lib/age";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -93,7 +81,7 @@ export default function ProfilePage() {
   const age = ageFromDob(dob);
 
   return (
-    <main className="min-h-[100dvh] px-6 pb-12 pt-6">
+    <main className="mx-auto min-h-[100dvh] w-full max-w-app px-6 pb-12 pt-6">
       <header className="flex items-center gap-3 pb-4">
         <Link href="/" className="text-xl text-muted active:scale-90">
           ←
@@ -152,7 +140,7 @@ export default function ProfilePage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full rounded-2xl bg-gradient-to-br from-accent to-accent2 p-3.5 font-bold text-card active:scale-[0.98] disabled:opacity-60"
+          className="w-full rounded-2xl bg-accent p-3.5 font-bold text-cream active:scale-[0.98] disabled:opacity-60"
         >
           {saving ? "กำลังบันทึก…" : saved ? "บันทึกแล้ว ✓" : "บันทึกการเปลี่ยนแปลง"}
         </button>
