@@ -67,10 +67,18 @@ Next.js 16 (App Router) · React 19 · TypeScript 6 · **Tailwind v4 (CSS-first)
 - [components/RunMap.tsx](src/components/RunMap.tsx) client-only — **dynamic import `ssr: false`** (Leaflet อ้าง `window`)
 - วาด: เส้นทางควรวิ่ง (ชาดแดง ประ) + ลูกศรทิศทาง (divIcon หมุนตาม bearing) + trace จริง (น้ำเงิน) + หมุด (จุดแรก=เริ่ม, สุดท้าย=เส้นชัย, เช็คอินแล้ว=✓)
 
-## ธีม UI "กระดาษสา" (นิตยสารมรดก)
-- Light theme: พื้นกระดาษครีม + ชาดแดง (`--color-accent`) + ทองอ่อน (`--color-accent2`) + หมึกดำ (`--color-ink`) — token ใน `@theme` ของ globals.css
-- ฟอนต์ **next/font** ([layout.tsx](src/app/layout.tsx)): **Chonburi** (display, `font-display`) + **Sarabun** (body, `font-sans`)
-- คลาส decorative: `.kicker` `.rule-double` `.card-paper` `.hatch` `.rise` `.livedot` · ใช้เลขไทยใน UI เชิงตกแต่ง
+## ธีม UI "YOUNG vibes" (ม่วง/เหลือง — รีดีไซน์ มิ.ย. 2026)
+- **Dark theme** (`color-scheme: dark`): พื้นม่วงเข้ม `--color-bg` `#3b1a4e` + ส้มสด CTA `--color-accent` `#f44e03` + เหลืองสด `--color-accent2` `#ffe956` + ครีม `--color-cream` (sunburst/การ์ดสว่าง) + ลาเวนเดอร์ `--color-chip` + ขาวนวล `--color-ink` — token ทั้งหมดใน `@theme` ของ [globals.css](src/app/globals.css)
+- ฟอนต์ **next/font** ([layout.tsx](src/app/layout.tsx)): **Kanit** (display, `font-display`) + **Fredoka** (`font-brand`, wordmark "young vibes") + **Sarabun** (body, `font-sans`)
+- คลาส decorative ยังใช้ต่อ: `.kicker` `.rule-double` `.card-paper` `.hatch` `.rise` `.livedot` `.chip` · ใช้เลขไทยใน UI เชิงตกแต่ง
+- **คอมโพเนนต์ธีมใช้ซ้ำ**: [Sunburst.tsx](src/components/Sunburst.tsx) (วงแฉกครีม ใส่ emoji กลาง) · [Medal.tsx](src/components/Medal.tsx) (sunburst + ริบบิ้น, optional วงใน) · [RoadBg.tsx](src/components/RoadBg.tsx) (ถนนคดเคี้ยวพื้นหลัง — วางในพาเรนต์ `relative isolate` ใช้ `-z-10`) · [Mascot.tsx](src/components/Mascot.tsx) (นักวิ่ง — **placeholder SVG**, สลับเป็นอาร์ตจริงถ้าทีมมีให้)
+- **Gotcha**: `Sunburst`/`Medal` ตั้ง `position: relative` ที่ root — **อย่าส่ง utility `absolute`/positioning เข้าไปตรง ๆ** (จะตีกันทำ layout พัง) ให้ครอบด้วย `<span>` ที่ positioned แทน
+- **Design source of truth**: PNG ใน `Young(keep)Vibes/` (export จาก Canva ของทีม) — เสร็จจริงแค่ home/routes/build; หน้าอื่น extrapolate ตามธีม ถ้าทีมเพิ่มสกรีนให้ match ตาม
+
+## การ์ดสรุปผล (recap share card)
+- จบวิ่ง → [SummaryModal](src/components/SummaryModal.tsx) สรุปผล → เปิด [RecapShareModal](src/components/RecapShareModal.tsx) (พรีวิว/เซฟ/แชร์) — เรียกจาก [run/[routeId]/page.tsx](src/app/run/[routeId]/page.tsx); recap data gate ตอนเปิด modal เท่านั้น
+- [lib/recapCard.ts](src/lib/recapCard.ts) — **โมดูล canvas draw บริสุทธิ์** วาดการ์ด 1080×1920 (Layout B): สถิติ + polyline ของ trace จริง (degenerate trace → จุดกลางการ์ด) · รับ `RecapData` ที่ format ค่ามาแล้ว
+- [lib/notoSansThai.ts](src/lib/notoSansThai.ts) — โหลด **Noto Sans Thai** ฝั่ง client (มี retry ตอนโหลดไม่ครบ) ใช้ทั้ง recap card และ [opengraph-image.tsx](src/app/opengraph-image.tsx) (OG ใช้ `NOTO_FAMILY`, ไม่ใส่ letter-spacing ไทย)
 
 ## ข้อควรระวัง (gotcha ที่เคยเจอ)
 - **react-leaflet + html5-qrcode พังกับ React StrictMode double-mount (dev)** → `Map container is being reused`, camera `AbortError` · แก้โดย `reactStrictMode: false` ใน [next.config.mjs](next.config.mjs) (มีผลแค่ dev) — โค้ดกล้อง/แผนที่ก็ป้องกัน double-mount ไว้ระดับนึงแล้ว
