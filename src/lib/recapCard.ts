@@ -15,14 +15,14 @@ export interface RecapData {
 const W = 1080;
 const H = 1920;
 const COLOR = {
-  paper: "#f4ecdd",
-  panel: "#efe4ce",
-  line: "#d8caab",
-  ink: "#2a2118",
-  accent: "#b23a2e",
-  accent2: "#c9962b",
-  muted: "#7a6f5d",
-  trace: "#1d4ed8",
+  paper: "#3b1a4e",
+  panel: "#4e2d63",
+  line: "#6b4d82",
+  ink: "#fdf7ea",
+  accent: "#f44e03",
+  accent2: "#ffe956",
+  muted: "#b6a9cf",
+  trace: "#fdfbbb",
 };
 
 

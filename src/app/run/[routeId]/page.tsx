@@ -200,9 +200,9 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
     );
 
   return (
-    <main className="relative flex h-[100dvh] flex-col overflow-hidden">
-      {/* หัว */}
-      <header className="z-[500] flex items-center gap-3 border-b border-line bg-card px-4 py-3">
+    <main className="relative flex h-[100dvh] flex-col overflow-hidden landscape:flex-row">
+      {/* หัว (แนวตั้ง) */}
+      <header className="z-[500] flex items-center gap-3 border-b border-line bg-card px-4 py-3 landscape:hidden">
         <Link href="/" className="text-xl text-muted active:scale-90">
           ←
         </Link>
@@ -219,20 +219,20 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
       <div className="relative flex-1">
         <RunMap route={route} trace={s.trace} current={s.current} checkedIn={s.checkedIn} />
 
-        {/* สถิติลอย */}
-        <div className="pointer-events-none absolute inset-x-3 top-3 z-[600]">
+        {/* สถิติลอย (เฉพาะแนวตั้ง — แนวนอนย้ายไปแผงข้าง) */}
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-[600] landscape:hidden">
           <StatsBar stats={statList} />
         </div>
 
-        {/* แต้มสด */}
-        <div className="absolute right-3 top-[86px] z-[600] rounded-full border border-accent bg-card/90 px-3 py-1 text-sm font-bold text-accent backdrop-blur">
+        {/* แต้มสด (แนวตั้ง) */}
+        <div className="absolute right-3 top-[86px] z-[600] rounded-full border border-accent bg-card/90 px-3 py-1 text-sm font-bold text-accent backdrop-blur landscape:hidden">
           🏆 {s.points}
         </div>
 
-        {/* ปุ่มสแกน QR ระหว่างวิ่ง */}
+        {/* ปุ่มสแกน QR ระหว่างวิ่ง (แนวตั้ง) */}
         <button
           onClick={() => setScanning(true)}
-          className="absolute right-3 top-[124px] z-[600] flex items-center gap-1.5 rounded-full border border-line bg-card/90 px-3 py-1.5 text-xs font-bold backdrop-blur active:scale-95"
+          className="absolute right-3 top-[124px] z-[600] flex items-center gap-1.5 rounded-full border border-line bg-card/90 px-3 py-1.5 text-xs font-bold backdrop-blur active:scale-95 landscape:hidden"
         >
           📷 สแกน QR
         </button>
@@ -240,8 +240,8 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         <CheckinToast data={s.lastCheckin} onClose={() => useRunStore.getState().clearLastCheckin()} />
       </div>
 
-      {/* แผงควบคุม */}
-      <div className="z-[600] bg-card p-4">
+      {/* แผงควบคุม (แนวตั้ง — ล่าง) */}
+      <div className="z-[600] bg-card p-4 landscape:hidden">
         {s.status === "idle" && (
           <div className="flex items-center gap-2.5">
             <select
@@ -254,7 +254,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
             </select>
             <button
               onClick={onStart}
-              className="flex-1 rounded-xl bg-gradient-to-br from-accent to-accent2 p-3.5 font-bold tracking-wide text-card active:scale-95"
+              className="flex-1 rounded-xl bg-accent p-3.5 font-bold tracking-wide text-cream active:scale-95"
             >
               ▶ เริ่มวิ่ง
             </button>
@@ -263,12 +263,72 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         {s.status === "running" && (
           <button
             onClick={() => useRunStore.getState().finish()}
-            className="w-full rounded-xl bg-ink p-3.5 font-bold tracking-wide text-card active:scale-95"
+            className="w-full rounded-xl bg-[#2c1338] p-3.5 font-bold tracking-wide text-cream active:scale-95"
           >
             ■ จบการวิ่ง
           </button>
         )}
       </div>
+
+      {/* แผงข้าง (แนวนอน) — หัว + สถิติ + แต้ม + สแกน + ปุ่มควบคุม รวมในแถบขวา */}
+      <aside className="z-[600] hidden shrink-0 flex-col gap-3 overflow-y-auto border-l border-line bg-card p-4 landscape:flex landscape:w-72 lg:w-80">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-xl text-muted active:scale-90">
+            ←
+          </Link>
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-display text-[15px] leading-tight">{route.name}</div>
+            <div className="text-[11px] text-muted">
+              {route.distanceKm} กม. · {route.checkpointIds.length} จุด
+              {snapping && <span className="text-accent"> · กำลังดัดเส้นให้เกาะถนน…</span>}
+            </div>
+          </div>
+        </div>
+
+        <StatsBar stats={statList} className="grid grid-cols-2 gap-2" />
+
+        <div className="flex items-center justify-between gap-2">
+          <span className="rounded-full border border-accent bg-card px-3 py-1 text-sm font-bold text-accent">
+            🏆 {s.points}
+          </span>
+          <button
+            onClick={() => setScanning(true)}
+            className="flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-xs font-bold active:scale-95"
+          >
+            📷 สแกน QR
+          </button>
+        </div>
+
+        {/* ปุ่มควบคุม (ดันลงล่างแผงเมื่อมีที่ว่าง) */}
+        <div className="mt-auto">
+          {s.status === "idle" && (
+            <div className="flex flex-col gap-2.5">
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as RunMode)}
+                className="rounded-xl border border-line bg-card2 px-3 py-3 text-sm"
+              >
+                <option value="sim">จำลองวิ่ง</option>
+                <option value="gps">GPS จริง</option>
+              </select>
+              <button
+                onClick={onStart}
+                className="rounded-xl bg-accent p-3.5 font-bold tracking-wide text-cream active:scale-95"
+              >
+                ▶ เริ่มวิ่ง
+              </button>
+            </div>
+          )}
+          {s.status === "running" && (
+            <button
+              onClick={() => useRunStore.getState().finish()}
+              className="w-full rounded-xl bg-[#2c1338] p-3.5 font-bold tracking-wide text-cream active:scale-95"
+            >
+              ■ จบการวิ่ง
+            </button>
+          )}
+        </div>
+      </aside>
 
       {/* สรุปผล */}
       {s.status === "finished" && (
