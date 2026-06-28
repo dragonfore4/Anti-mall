@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-โปรเจ็คจริง (Next.js) ของ "วิ่งรอบเกาะรัตนโกสินทร์" — เว็บแอพวิ่งเชิงท่องเที่ยววัฒนธรรม รวม GPS tracking + เกมสะสมแต้ม + เกร็ดความรู้มรดก + Google login + สแกน QR สะสมเหรียญ ดูคอนเซ็ปต์/ฟีเจอร์ภาพรวมที่ `../CLAUDE.md` (ราก) ไฟล์นี้เน้นสถาปัตยกรรมของโค้ดจริงในโฟลเดอร์ `web/`
+โปรเจ็คจริง (Next.js) ของ "วิ่งรอบเกาะรัตนโกสินทร์" — เว็บแอพวิ่งเชิงท่องเที่ยววัฒนธรรม รวม GPS tracking + เกมสะสมแต้ม + เกร็ดความรู้มรดก + Google login + สแกน QR สะสมเหรียญ · โค้ดทั้งหมดอยู่ที่ราก repo นี้ (App Router อยู่ใน [src/app/](src/app/))
 
 > เอกสารเสริม: คู่มือ maintainer [`README.md`](README.md) / [`docs/maintainer-guide.html`](docs/maintainer-guide.html) · อธิบาย routes.ts ละเอียด [`docs/routes-explained.md`](docs/routes-explained.md) · ตั้งค่า Supabase+Google [`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md)
 
@@ -16,7 +16,7 @@ npm run lint     # next lint
 ```
 
 - ไม่มี test runner — "ตรวจว่าพัง/ไม่พัง" ใช้ `npm run build` (คอมไพล์ TypeScript ทั้งหมด) หรือดู dev log
-- **`.env.local`** (ไม่ขึ้น git) ต้องมี: `ORS_API_KEY` (เส้นทางเกาะถนน) + `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` (auth/cloud) — ถ้าไม่ใส่ Supabase แอพยังรันได้ในโหมด local (ดู Persistence)
+- **`.env.local`** (ไม่ขึ้น git) ต้องมี: `ORS_API_KEY` (เส้นทางเกาะถนน) + `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` (auth/cloud) — ถ้าไม่ใส่ Supabase แอพยังรันได้ในโหมด local (ดู Persistence) · **`SUPABASE_SERVICE_ROLE_KEY`** (optional, server-only) เปิดหน้า [/dashboard](src/app/dashboard/page.tsx) สถิติรวมข้ามผู้ใช้ · ตัวอย่างครบทุกคีย์ใน [.env.example](.env.example)
 
 ## Stack (เวอร์ชันล่าสุด — ตั้งใจ pin ใหม่)
 
@@ -32,6 +32,12 @@ Next.js 16 (App Router) · React 19 · TypeScript 6 · **Tailwind v4 (CSS-first)
 - **`CheckpointId`** (union ของ id หมุดทั้งหมด) นิยามใน [types.ts](src/types.ts) ใช้กับ `Checkpoint.id` และ `RouteDef.checkpointIds` → พิมพ์ id ผิด TS ฟ้องตั้งแต่ compile + บังคับ sync กับ CHECKPOINTS (เพิ่มหมุดต้องเพิ่มใน union)
 - [data/routes.ts](src/data/routes.ts) นิยามเส้นทาง Basic ด้วย factory `basic({...})` รับแค่ `checkpointIds` แล้ว **derive `path` + `distanceKm` + `legCalories` + `kind` อัตโนมัติ** — อย่าพิมพ์ `path` มือ (override ได้)
 - **แคลอรี่เป็นค่าต่อช่วง (leg)** เก็บใน `legCalories: number[]` (ยาว = จำนวนหมุด − 1) เช็คอินถึงหมุดที่ N → ได้ `legCalories[N-1]` · ไม่กรอก = คิดจากระยะ (`legCaloriesFromPath` ใน geo.ts) · Advance ใช้ fallback นี้
+
+### สองโหมดสร้างเส้นทาง: Basic (เลือกสำเร็จรูป) vs Advance (สร้างเอง)
+- หน้า [/build](src/app/build/page.tsx) มีสองแท็บ — **Basic** เลือกจากเส้นทางที่นิยามไว้ใน `routes.ts` · **Advance** ให้ผู้ใช้เลือก ย่าน (`district`) + ประเภทมรดก (`heritage`) + บรรยากาศ (`atmosphere`)
+- ตัวเลือก Advance: บรรยากาศนิยามใน [data/options.ts](src/data/options.ts) (`ATMOSPHERES`) · ย่าน/มรดก derive จากฟิลด์ของ CHECKPOINTS
+- [lib/routeGen.ts](src/lib/routeGen.ts) `generateAdvanceRoute(sel)` — คัดหมุดตามตัวเลือก → เรียงต่อเนื่องด้วย **nearest-neighbour** (เริ่มจุดเหนือสุด) → derive เป็น `RouteDef` แบบเดียวกับ Basic (ถ้ากรองแล้วเหลือ < 2 จุดจะคงทั้งย่านไว้ กันเส้นสั้นเกิน) · คืน `null` ถ้าเลือกไม่พอ
+- ทั้งสองโหมดจบที่ `repo.saveDraftRoute()` → ส่ง draft ไปหน้า `/run` (route ที่สร้างเองไม่มีใน `routes.ts` จึงต้องส่งผ่าน draft)
 
 ### เส้นทางเกาะถนนจริง (OpenRouteService)
 - `route.path` เป็นแค่เส้นตรงเชื่อมหมุด → "ดัด" ให้เกาะถนนผ่าน ORS **Directions V2 (`foot-walking`)**
@@ -51,12 +57,16 @@ Next.js 16 (App Router) · React 19 · TypeScript 6 · **Tailwind v4 (CSS-first)
 - ตาราง Supabase: `profiles` / `runs` / `achievements` + **RLS ต่อ user** (สร้างด้วย [supabase/schema.sql](supabase/schema.sql))
 - SupabaseRepo **กรอง `.eq("user_id", uid)` เอง** (ไม่พึ่ง RLS อย่างเดียว) · `unlockAchievement` ใช้ `upsert({ignoreDuplicates})` ไม่พึ่งรหัส error
 - ⚠️ anon key เป็น **public ได้** (ออกแบบมาแบบนั้น) — ความปลอดภัยจริงคือ RLS; ห้ามเอา `service_role` key มาใส่ `NEXT_PUBLIC_`
+- **Admin client** [lib/supabase/admin.ts](src/lib/supabase/admin.ts) — ใช้ `SUPABASE_SERVICE_ROLE_KEY` (server-only, **bypass RLS**) อ่านข้ามผู้ใช้สำหรับ [/dashboard](src/app/dashboard/page.tsx) (สถิติรวม: ผู้ใช้ทั้งหมด/กราจกระจายอายุ ฯลฯ) · `isAdminConfigured` เช็ก env · หน้า dashboard เป็น server component `dynamic = "force-dynamic"` (อ่านสด ไม่ cache) — ใช้ได้เฉพาะใน server component / route handler เท่านั้น
 
 ### State การวิ่ง: zustand store
 - [store/runStore.ts](src/store/runStore.ts) เก็บ status/trace/distance/points/calories/checkedIn ฯลฯ
 - **`pushPosition(coord)` คือหัวใจ** — ทุกตำแหน่งใหม่ (sim/GPS): กรอง noise (jump > `GPS_JUMP_MAX_M` 200ม. = ทิ้ง) → บวกระยะ (Haversine) → ต่อ trace → check-in (หมุดที่ index `i` < `CHECKIN_RADIUS_M` 45ม. → +`points` + แคลของช่วง `route.legCalories?.[i-1]` + toast)
 - 2 โหมดเข้าฟังก์ชันเดียวกัน: **sim** = `densify(route.path)` step ทุก 180ms / **gps** = `watchPosition`
-- หน้าวิ่ง [run/[routeId]/page.tsx](src/app/run/[routeId]/page.tsx) เซฟผลตอนจบผ่าน `repo.addRun()` — ถ้าพลาดมี **ปุ่มลองใหม่** (ไม่หายเงียบ)
+- **ค่าคงที่ปรับได้** (`CHECKIN_RADIUS_M` / `GPS_JUMP_MAX_M` / `STEP_LEN_M`) + helper (`steps`, `formatTime`) อยู่ใน [lib/stats.ts](src/lib/stats.ts) — แก้ที่เดียว
+- หน้าวิ่ง [run/[routeId]/page.tsx](src/app/run/[routeId]/page.tsx) เซฟผลตอนจบผ่าน `repo.addRun()` — ถ้าพลาดมี **ปุ่มลองใหม่** (ไม่หายเงียบ) · ใช้ [lib/useWakeLock.ts](src/lib/useWakeLock.ts) กันจอดับระหว่างวิ่ง (secure context เท่านั้น)
+- **เว็บ track GPS ใน background ไม่ได้** (ข้อจำกัดเบราว์เซอร์) — โหมด gps จึงมี [lib/useBackgroundGuard.ts](src/lib/useBackgroundGuard.ts) จับช่วงที่สลับออกไป (`visibilitychange`) แล้วเตือน + ดึงตำแหน่งสดทันทีตอนกลับมา (`getCurrentPosition`) ให้ trace ลากเส้นเชื่อมต่อ · มีแบนเนอร์ "เปิดจอค้างไว้" ระหว่างวิ่ง gps
+- ประวัติการวิ่งย้อนหลังที่ [/history](src/app/history/page.tsx) (อ่านผ่าน `repo.getRuns()`)
 
 ### QR + Achievements (เหรียญสถานที่)
 - [components/ScanOverlay.tsx](src/components/ScanOverlay.tsx) — scanner ใช้ซ้ำได้ (prop `modal`: เต็มจอ=หน้า /scan, การ์ดกลางจอ=ปุ่มในหน้าวิ่ง); อ่าน QR payload **`rk:cp:<checkpointId>`** → `repo.unlockAchievement(id)`

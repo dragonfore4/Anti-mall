@@ -14,6 +14,7 @@ import { densify, metersToKm, pathLengthM } from "@/lib/geo";
 import { snapToRoads } from "@/lib/snapToRoads";
 import { formatTime, steps } from "@/lib/stats";
 import { useWakeLock } from "@/lib/useWakeLock";
+import { useBackgroundGuard } from "@/lib/useBackgroundGuard";
 import StatsBar from "@/components/StatsBar";
 import CheckinToast from "@/components/CheckinToast";
 import SummaryModal from "@/components/SummaryModal";
@@ -64,6 +65,7 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
   const [scanning, setScanning] = useState(false);
   const [showRecap, setShowRecap] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [hintDismissed, setHintDismissed] = useState(false);
   const s = useRunStore();
   const savedRef = useRef(false);
   const router = useRouter();
@@ -79,7 +81,23 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
     useRunStore.getState().begin(route, mode);
   };
 
-  useWakeLock(s.status === "running" && mode === "gps");
+  const trackingGps = s.status === "running" && mode === "gps";
+  useWakeLock(trackingGps);
+
+  // ตรวจจับช่วงที่สลับออกไป background ระหว่างวิ่ง GPS (track ต่อไม่ได้บนเว็บ)
+  const { gapMs, clear: clearGap } = useBackgroundGuard(trackingGps);
+
+  // กลับมาจาก background → ดึงตำแหน่งสดทันที (ไม่ต้องรอ watchPosition tick ถัดไป)
+  // จุดที่กระโดดไกลจะถูกตัดระยะโดยตัวกรอง noise ใน store แต่ trace จะลากเส้นเชื่อมต่อให้
+  useEffect(() => {
+    if (gapMs > 0 && trackingGps && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (p) => useRunStore.getState().pushPosition([p.coords.latitude, p.coords.longitude]),
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
+      );
+    }
+  }, [gapMs, trackingGps]);
 
   // ลูปติดตามตำแหน่ง (sim / gps) + นาฬิกาจับเวลา
   useEffect(() => {
@@ -238,6 +256,20 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
         </button>
 
         <CheckinToast data={s.lastCheckin} onClose={() => useRunStore.getState().clearLastCheckin()} />
+
+        {/* เตือนว่าหน้าจอต้องเปิดค้าง — เว็บ track ต่อใน background ไม่ได้ */}
+        {trackingGps && !hintDismissed && (
+          <div className="absolute inset-x-3 bottom-3 z-[600] flex items-start gap-2 rounded-xl border border-line bg-card/90 px-3 py-2 text-[11px] leading-relaxed text-muted backdrop-blur">
+            <span>💡 เปิดหน้าจอค้างไว้ระหว่างวิ่ง — ถ้าออกจากแอปหรือจอดับ การจับระยะจะหยุดชั่วคราว</span>
+            <button
+              onClick={() => setHintDismissed(true)}
+              aria-label="ปิด"
+              className="ml-auto shrink-0 text-muted active:opacity-60"
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </div>
 
       {/* แผงควบคุม (แนวตั้ง — ล่าง) */}
@@ -349,6 +381,18 @@ export default function RunPage({ params }: { params: Promise<{ routeId: string 
           <span className="text-accent">⚠️ บันทึกการวิ่งไม่สำเร็จ</span>
           <button onClick={persistRun} className="font-bold text-accent underline underline-offset-2">
             ลองอีกครั้ง
+          </button>
+        </div>
+      )}
+
+      {/* เตือนตอนกลับมาจาก background — ช่วงที่หายไปอาจติดตามไม่ครบ */}
+      {gapMs > 0 && (
+        <div className="fixed inset-x-4 top-4 z-[1100] flex items-center justify-center gap-3 rounded-xl border border-accent2 bg-card p-3 text-sm shadow-2xl">
+          <span className="text-accent2">
+            ⚠️ สลับออกไป {Math.round(gapMs / 1000)} วิ — ช่วงนั้นจับระยะไม่ได้ ลากเส้นเชื่อมต่อให้แล้ว
+          </span>
+          <button onClick={clearGap} className="font-bold text-accent2 underline underline-offset-2">
+            รับทราบ
           </button>
         </div>
       )}
